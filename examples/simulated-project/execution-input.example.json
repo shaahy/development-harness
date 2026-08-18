@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1.0",
+  "feature_id": "EXAMPLE-001",
+  "target_root": "C:/path/to/target-repo",
+  "input_profile": "matt_spec_only",
+  "ui_mode": "auto_detect",
+  "authorization": {
+    "spec_approved_by_human": true,
+    "execution_authorized": true,
+    "auto_plan": true,
+    "auto_ui_baseline_when_needed": true,
+    "auto_commit_in_isolated_worktree": true
+  },
+  "authorities": {
+    "domain_context": ".scratch/example/CONTEXT.md",
+    "spec": ".scratch/example/spec.md",
+    "adr": []
+  },
+  "generated": {
+    "implementation_plan": "docs/superpowers/plans/2026-08-18-example.md",
+    "plan_review_evidence": ".harness/plan-evidence.md",
+    "generated_ui_root": "docs/ui-ux/example"
+  },
+  "git": {
+    "base_ref": "main",
+    "worktree_path": "C:/path/to/worktrees/example",
+    "branch": "codex/example"
+  }
+}

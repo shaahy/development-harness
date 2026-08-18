@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "execution-input.schema.yaml",
+  "title": "Harness Intake Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","feature_id","target_root","input_profile","ui_mode","authorization","authorities","git"],
+  "properties": {
+    "schema_version": {"const":"1.1.0"},
+    "feature_id": {"type":"string","minLength":1},
+    "target_root": {"type":"string","minLength":1},
+    "input_profile": {"enum":["matt_spec_only","matt_plus_uiux"]},
+    "ui_mode": {"enum":["auto_detect","none","reuse_existing","provided","auto_generate"]},
+    "authorization": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["spec_approved_by_human","execution_authorized","auto_plan","auto_ui_baseline_when_needed","auto_commit_in_isolated_worktree"],
+      "properties": {
+        "spec_approved_by_human":{"const":true},
+        "execution_authorized":{"const":true},
+        "auto_plan":{"const":true},
+        "auto_ui_baseline_when_needed":{"const":true},
+        "auto_commit_in_isolated_worktree":{"const":true}
+      }
+    },
+    "authorities": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["domain_context","spec"],
+      "properties": {
+        "domain_context":{"type":"string","minLength":1},
+        "spec":{"type":"string","minLength":1},
+        "adr":{"type":"array","items":{"type":"string","minLength":1}},
+        "existing_ui_sources":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+        "ui_baseline": {
+          "type":"object",
+          "additionalProperties":false,
+          "required":["handoff_manifest","ui_contract","design_tokens_json","design_tokens_css","component_specs","state_matrix"],
+          "properties": {
+            "handoff_manifest":{"type":"string","minLength":1},
+            "ui_contract":{"type":"string","minLength":1},
+            "design_tokens_json":{"type":"string","minLength":1},
+            "design_tokens_css":{"type":"string","minLength":1},
+            "component_specs":{"type":"string","minLength":1},
+            "state_matrix":{"type":"string","minLength":1}
+          }
+        }
+      }
+    },
+    "generated": {
+      "type":"object",
+      "additionalProperties":false,
+      "properties": {
+        "implementation_plan":{"type":"string","minLength":1},
+        "plan_review_evidence":{"type":"string","minLength":1},
+        "generated_ui_root":{"type":"string","minLength":1}
+      }
+    },
+    "git": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["base_ref","worktree_path","branch"],
+      "properties": {
+        "base_ref":{"type":"string","minLength":1},
+        "worktree_path":{"type":"string","minLength":1},
+        "branch":{"type":"string","minLength":1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if":{"properties":{"input_profile":{"const":"matt_spec_only"}}},
+      "then":{"properties":{"ui_mode":{"enum":["auto_detect","none","reuse_existing","auto_generate"]}}}
+    },
+    {
+      "if":{"properties":{"input_profile":{"const":"matt_plus_uiux"}}},
+      "then":{"properties":{"ui_mode":{"const":"provided"},"authorities":{"required":["ui_baseline"]}}}
+    },
+    {
+      "if":{"properties":{"ui_mode":{"const":"provided"}}},
+      "then":{"properties":{"authorities":{"required":["ui_baseline"]}}}
+    },
+    {
+      "if":{"properties":{"ui_mode":{"const":"reuse_existing"}}},
+      "then":{"properties":{"authorities":{"required":["existing_ui_sources"]}}}
+    }
+  ]
+}

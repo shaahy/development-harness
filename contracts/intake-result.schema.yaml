@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intake-result.schema.yaml",
+  "title": "Intake Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","feature_id","input_profile","ui_mode","status","authorities","evidence","next_event"],
+  "properties": {
+    "schema_version":{"const":"1.1.0"},
+    "feature_id":{"type":"string","minLength":1},
+    "input_profile":{"enum":["matt_spec_only","matt_plus_uiux"]},
+    "ui_mode":{"enum":["auto_detect","none","reuse_existing","provided","auto_generate"]},
+    "status":{"enum":["VALID","INVALID","CONFLICT"]},
+    "authorities":{"type":"object"},
+    "missing":{"type":"array","items":{"type":"string"}},
+    "conflicts":{"type":"array","items":{"type":"string"}},
+    "evidence":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+    "next_event":{"enum":["INTAKE_VALID","INTAKE_INVALID","INPUT_CONFLICT"]}
+  }
+}

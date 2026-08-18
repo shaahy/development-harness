@@ -1,0 +1,14 @@
+# Harness runtime state and generated evidence
+.harness/
+
+# Local worktrees and transient files
+.worktrees/
+*.log
+*.tmp
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

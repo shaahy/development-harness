@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.1.0",
+  "runtime": "codex-app",
+  "mode": "post-spec-autonomous-delivery",
+  "paths": {
+    "progress": ".harness/progress.md",
+    "decision_ledger": ".harness/decision-ledger.md",
+    "intake_report": ".harness/intake-result.json",
+    "plan_report": ".harness/plan-result.json",
+    "plan_evidence": ".harness/plan-evidence.md",
+    "task_briefs": ".harness/task-briefs",
+    "reports": ".harness/reports",
+    "implementation_evidence": ".harness/implementation-evidence.md",
+    "final_acceptance_package": ".harness/final-acceptance-package.md"
+  },
+  "input_profiles": {
+    "matt_spec_only": {
+      "required": ["domain_context", "spec"],
+      "ui_modes": ["auto_detect", "none", "reuse_existing", "auto_generate"]
+    },
+    "matt_plus_uiux": {
+      "required": ["domain_context", "spec", "ui_baseline"],
+      "ui_modes": ["provided"]
+    }
+  },
+  "automation": {
+    "classify_ui_need": true,
+    "auto_generate_missing_ui_baseline": true,
+    "auto_generate_implementation_plan": true,
+    "auto_review_implementation_plan": true,
+    "default_execution_mode": "subagent-driven-development"
+  },
+  "concurrency": {
+    "max_active_agents": 3,
+    "max_concurrent_writers": 1,
+    "allow_parallel_read_only_work": true
+  },
+  "limits": {
+    "max_ui_review_rounds": 3,
+    "max_plan_review_rounds": 3,
+    "max_debug_attempts_per_root_cause": 3,
+    "max_review_fix_rounds_per_task": 5
+  },
+  "git": {
+    "require_repository": true,
+    "require_isolated_worktree": true,
+    "auto_commit_in_isolated_worktree": true,
+    "forbidden_without_human_approval": [
+      "merge", "push", "deploy", "publish", "release",
+      "delete_worktree", "delete_branch", "rewrite_shared_history"
+    ]
+  },
+  "human_gates": [
+    "SPEC_AND_SCOPE_AUTHORIZATION",
+    "INPUT_AUTHORITY_CONFLICT",
+    "PRODUCT_AMBIGUITY",
+    "ARCHITECTURE_BREAKER",
+    "SECURITY_OR_CREDENTIALS",
+    "IRREVERSIBLE_ACTION",
+    "EXTERNAL_SIDE_EFFECT",
+    "FINAL_ACCEPTANCE"
+  ],
+  "always_required_intake_inputs": ["domain_context", "spec", "target_repository"],
+  "generated_outputs": ["ui_baseline_when_needed", "implementation_plan", "plan_review_evidence"]
+}

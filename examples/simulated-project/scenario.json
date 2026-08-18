@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.1.0",
+  "description": "Deterministic routing scenarios for autonomous intake, planning and execution.",
+  "cases": [
+    {"name":"valid_intake","from":"READY_FOR_INTAKE","event":"INTAKE_VALID","expected_to":"INTAKE_CLASSIFIED","expected_action":"classify_ui_need"},
+    {"name":"matt_only_new_ui","from":"INTAKE_CLASSIFIED","event":"NEW_UI_BASELINE_REQUIRED","expected_to":"UI_PREPARING","expected_action":"dispatch_ui_preparer"},
+    {"name":"provided_ui_to_plan","from":"INTAKE_CLASSIFIED","event":"UI_BASELINE_PROVIDED","expected_to":"PLAN_GENERATING","expected_action":"dispatch_planner_with_provided_ui"},
+    {"name":"ui_review_rework","from":"UI_REVIEW","event":"UI_REVIEW_FAILED","expected_to":"UI_PREPARING","expected_action":"dispatch_ui_preparer_for_findings"},
+    {"name":"ui_review_pass","from":"UI_REVIEW","event":"UI_REVIEW_PASSED","expected_to":"PLAN_GENERATING","expected_action":"dispatch_planner_with_generated_ui"},
+    {"name":"plan_generated","from":"PLAN_GENERATING","event":"PLAN_GENERATED","expected_to":"PLAN_REVIEW","expected_action":"dispatch_plan_reviewer"},
+    {"name":"plan_rework","from":"PLAN_REVIEW","event":"PLAN_REVIEW_FAILED","expected_to":"PLAN_REWORK","expected_action":"dispatch_planner_for_findings"},
+    {"name":"plan_passes_without_human_gate","from":"PLAN_REVIEW","event":"PLAN_REVIEW_PASSED","expected_to":"EXECUTION_READY","expected_action":"run_execution_readiness_check"},
+    {"name":"plan_review_breaker","from":"PLAN_REVIEW","event":"PLAN_REVIEW_ROUNDS_EXHAUSTED","expected_to":"BLOCKED_PLAN","expected_action":"prepare_plan_blocker_packet"},
+    {"name":"execution_ready","from":"EXECUTION_READY","event":"EXECUTION_READINESS_PASSED","expected_to":"EXECUTING","expected_action":"dispatch_next_task"},
+    {"name":"implementation_to_test","from":"TASK_IMPLEMENTING","event":"IMPLEMENTATION_DONE","expected_to":"TASK_TESTING","expected_action":"dispatch_tester"},
+    {"name":"test_failure_to_debugger","from":"TASK_TESTING","event":"TEST_FAILED","expected_to":"TASK_REWORK","expected_action":"dispatch_debugger"},
+    {"name":"fix_to_retest","from":"TASK_REWORK","event":"FIX_DONE","expected_to":"TASK_TESTING","expected_action":"dispatch_tester"},
+    {"name":"test_pass_to_review","from":"TASK_TESTING","event":"TEST_PASSED","expected_to":"TASK_REVIEW","expected_action":"dispatch_reviewer"},
+    {"name":"debug_breaker","from":"TASK_REWORK","event":"DEBUG_ATTEMPT_EXHAUSTED","expected_to":"BLOCKED_ARCHITECTURE","expected_action":"prepare_architecture_packet"},
+    {"name":"final_review_to_human","from":"FINAL_REVIEW","event":"FINAL_REVIEW_PASSED","expected_to":"AWAITING_HUMAN_ACCEPTANCE","expected_action":"prepare_final_acceptance_package"},
+    {"name":"global_external_action_block","from":"EXECUTING","event":"MERGE_PUSH_DEPLOY_REQUIRED","expected_to":"BLOCKED_EXTERNAL_ACTION","expected_action":"request_human_approval"}
+  ]
+}

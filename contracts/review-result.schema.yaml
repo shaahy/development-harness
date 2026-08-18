@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-result.schema.yaml",
+  "title": "Review Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","task_id","mode","round","status","baseline","head","spec_conclusion","quality_conclusion","findings","evidence","next_event"],
+  "properties": {
+    "schema_version":{"const":"1.0.0"},
+    "task_id":{"type":"string","minLength":1},
+    "mode":{"enum":["task","final_three_axis"]},
+    "round":{"type":"integer","minimum":1,"maximum":5},
+    "status":{"enum":["APPROVED","FINDINGS","REVIEW_FIX_ROUNDS_EXHAUSTED"]},
+    "baseline":{"type":"string","minLength":1},
+    "head":{"type":"string","minLength":1},
+    "spec_conclusion":{"enum":["PASS","FAIL"]},
+    "quality_conclusion":{"enum":["PASS","FAIL"]},
+    "ui_contract_conclusion":{"enum":["PASS","FAIL","NOT_APPLICABLE"]},
+    "findings":{"type":"array","items":{"type":"object","required":["id","severity","authority","location","problem","impact"],"properties":{"id":{"type":"string"},"severity":{"enum":["CRITICAL","HIGH","MEDIUM","LOW"]},"authority":{"type":"string"},"location":{"type":"string"},"problem":{"type":"string"},"impact":{"type":"string"}}}},
+    "evidence":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+    "next_event":{"type":"string","minLength":1}
+  }
+}
