@@ -6,6 +6,8 @@
     "progress": ".harness/progress.md",
     "decision_ledger": ".harness/decision-ledger.md",
     "intake_report": ".harness/intake-result.json",
+    "bootstrap_report": ".harness/bootstrap-report.md",
+    "execution_input": ".harness/execution-input.json",
     "plan_report": ".harness/plan-result.json",
     "plan_evidence": ".harness/plan-evidence.md",
     "task_briefs": ".harness/task-briefs",
@@ -52,6 +54,7 @@
   },
   "human_gates": [
     "SPEC_AND_SCOPE_AUTHORIZATION",
+    "TECHNICAL_BASELINE_AUTHORIZATION",
     "INPUT_AUTHORITY_CONFLICT",
     "PRODUCT_AMBIGUITY",
     "ARCHITECTURE_BREAKER",

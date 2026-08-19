@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ask Harness"
+  short_description: "从 Matt 产物引导项目完成 Harness 自主开发执行准入"
+  default_prompt: "Use $ask-harness to inspect my Matt artifacts and guide this project to autonomous execution readiness."
+policy:
+  allow_implicit_invocation: false

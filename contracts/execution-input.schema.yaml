@@ -14,10 +14,11 @@
     "authorization": {
       "type":"object",
       "additionalProperties":false,
-      "required":["spec_approved_by_human","execution_authorized","auto_plan","auto_ui_baseline_when_needed","auto_commit_in_isolated_worktree"],
+      "required":["spec_approved_by_human","technical_design_approved_by_human","execution_authorized","auto_plan","auto_ui_baseline_when_needed","auto_commit_in_isolated_worktree"],
       "properties": {
         "spec_approved_by_human":{"const":true},
-        "execution_authorized":{"const":true},
+        "technical_design_approved_by_human":{"const":true},
+        "execution_authorized":{"type":"boolean"},
         "auto_plan":{"const":true},
         "auto_ui_baseline_when_needed":{"const":true},
         "auto_commit_in_isolated_worktree":{"const":true}

@@ -41,12 +41,13 @@ $root=[IO.Path]::GetFullPath($TargetRoot)
 Add-Check 'target_root_exists' (Test-Path -LiteralPath $root -PathType Container) $root
 $gitInside=$false; $branch=$null; $baseCommit=$null; $dirty=$null
 if (Test-Path -LiteralPath $root -PathType Container) {
-    $inside=Invoke-GitCapture @('-C',$root,'rev-parse','--is-inside-work-tree')
+    $gitPrefix=@('-c','core.excludesFile=','-C',$root)
+    $inside=Invoke-GitCapture ($gitPrefix+@('rev-parse','--is-inside-work-tree'))
     $gitInside=$inside.exit_code -eq 0 -and $inside.output -eq 'true'; Add-Check 'git_repository' $gitInside $inside.output
     if ($gitInside) {
-        $branch=(Invoke-GitCapture @('-C',$root,'branch','--show-current')).output
-        $baseCommit=(Invoke-GitCapture @('-C',$root,'rev-parse','HEAD')).output
-        $status=(Invoke-GitCapture @('-C',$root,'status','--porcelain')).output; $dirty=-not [string]::IsNullOrWhiteSpace($status)
+        $branch=(Invoke-GitCapture ($gitPrefix+@('branch','--show-current'))).output
+        $baseCommit=(Invoke-GitCapture ($gitPrefix+@('rev-parse','HEAD'))).output
+        $status=(Invoke-GitCapture ($gitPrefix+@('status','--porcelain'))).output; $dirty=-not [string]::IsNullOrWhiteSpace($status)
         Add-Check 'worktree_clean_or_explicitly_allowed' (-not $dirty -or $AllowDirtyWorktree.IsPresent) $(if($dirty){'dirty'}else{'clean'})
     }
 }
@@ -62,4 +63,3 @@ if ($UiMode -ne 'none') {
 $ready=-not ($checks | Where-Object {-not $_.passed})
 [pscustomobject]@{schema_version='1.1.0';ready=$ready;target_root=$root;ui_mode=$UiMode;branch=$branch;base_commit=$baseCommit;dirty=$dirty;checks=$checks} | ConvertTo-Json -Depth 8
 if(-not $ready){exit 2}
-

@@ -6,6 +6,7 @@
   "ui_mode": "auto_detect",
   "authorization": {
     "spec_approved_by_human": true,
+    "technical_design_approved_by_human": true,
     "execution_authorized": true,
     "auto_plan": true,
     "auto_ui_baseline_when_needed": true,

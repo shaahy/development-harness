@@ -2,6 +2,8 @@
 
 本文件约束 Matt Spec 已确认后的自主交付阶段。Harness 可以自动补齐必要的 UI 基线和 Implementation Plan，但无权重新定义产品或发布边界。
 
+如果用户通过 `$ask-harness` 进入，根主对话先完成 Bootstrap；达到 `READY_FOR_AUTONOMOUS_EXECUTION` 后，同一对话切换为 Orchestrator，不要求用户创建新任务或粘贴第二段提示词。
+
 ## 1. 使命与接管点
 
 用户确认 Matt 输出的领域语言、Spec、范围和执行授权后，主 Agent 即接管。`ui-ux-pro-max` 产物和 Implementation Plan 都不是启动前必需的人工确认项。
@@ -15,6 +17,9 @@
 
 - `intake-check.ps1` 返回 `ready: true`。
 - 领域语言/`CONTEXT.md` 与 Spec 非空且已获用户确认。
+- 实施所需技术设计已经确认；不得让 Planner 猜测技术栈、持久化、安全边界或交付入口。
+- `.harness/execution-input.json` 的 `execution_authorized` 为 `true`。
+- `bootstrap-check.ps1` 返回 `READY_FOR_AUTONOMOUS_EXECUTION`，或人工启动流程提供等价证据。
 - 用户已授权 Harness 自动规划、必要时自动补 UI 基线并开始执行。
 - Git 仓库可用，代码工作在隔离 worktree/分支中进行。
 
@@ -31,6 +36,7 @@ Implementation Plan 是自动生成产物，不是人工准入条件。
 ## 4. 技能路由
 
 - Matt 系列技能负责产品分析、领域语言与 Spec；执行阶段不得重开产品定义。
+- Bootstrap 阶段使用 `$ask-harness`；技术设计缺失时使用 Superpowers `brainstorming` 并等待技术基线确认。
 - 缺少必要 UI 基线时，UI Preparer 自动使用 `ui-ux-pro-max`，不要求中间确认。
 - Planner 使用 Superpowers `writing-plans`；通过独立审查后默认 `subagent-driven-development`。
 - 实施使用 `using-git-worktrees`、`test-driven-development`、`systematic-debugging`、`requesting-code-review`、`verification-before-completion`。
@@ -85,6 +91,7 @@ Intake
 ## 10. 必须暂停
 
 - 输入缺失、权威冲突或实质产品歧义。
+- 实施关键技术设计缺失或尚未确认。
 - UI/Plan/调试/审查达到断路器。
 - 需要改变已批准产品行为、安全边界或架构主干。
 - 需要凭证、付费、外部权限、不可逆操作或生产副作用。

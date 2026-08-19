@@ -13,17 +13,21 @@ function Assert-Check {
 }
 
 $requiredFiles = @(
-    'README.md','AGENTS.md','harness.config.yaml','workflow.yaml',
+    'AGENTS.md','harness.config.yaml','workflow.yaml',
     'roles/orchestrator.md','roles/planner.md','roles/ui-preparer.md','roles/implementer.md','roles/tester.md','roles/debugger.md','roles/reviewer.md',
-    'contracts/execution-input.schema.yaml','contracts/intake-result.schema.yaml','contracts/plan-result.schema.yaml','contracts/task-brief.schema.yaml','contracts/task-result.schema.yaml','contracts/defect.schema.yaml','contracts/review-result.schema.yaml',
-    'templates/progress.md','templates/decision-ledger.md','templates/plan-evidence.md','templates/implementation-evidence.md','templates/final-acceptance-package.md',
-    'checks/intake-check.ps1','checks/readiness-check.ps1','checks/resolve-next-action.ps1','examples/simulated-project/scenario.json','examples/simulated-project/execution-input.example.json'
+    'contracts/bootstrap-result.schema.yaml','contracts/execution-input.schema.yaml','contracts/intake-result.schema.yaml','contracts/plan-result.schema.yaml','contracts/task-brief.schema.yaml','contracts/task-result.schema.yaml','contracts/defect.schema.yaml','contracts/review-result.schema.yaml',
+    'templates/bootstrap-report.md','templates/progress.md','templates/decision-ledger.md','templates/plan-evidence.md','templates/implementation-evidence.md','templates/final-acceptance-package.md',
+    'scripts/install-harness.ps1','scripts/initialize-project.ps1','scripts/new-execution-input.ps1',
+    'checks/bootstrap-check.ps1','checks/intake-check.ps1','checks/readiness-check.ps1','checks/resolve-next-action.ps1','examples/simulated-project/scenario.json','examples/simulated-project/execution-input.example.json'
 )
 
 foreach ($relative in $requiredFiles) {
     $path = Join-Path $root $relative
     Assert-Check "file:$relative" (Test-Path -LiteralPath $path -PathType Leaf) $path
 }
+
+$documentationExists = (Test-Path -LiteralPath (Join-Path $root 'README.md') -PathType Leaf) -or (Test-Path -LiteralPath (Join-Path $root 'HARNESS.md') -PathType Leaf)
+Assert-Check 'file:harness_documentation' $documentationExists 'README.md or HARNESS.md is required.'
 
 $config = Get-Content -LiteralPath (Join-Path $root 'harness.config.yaml') -Raw | ConvertFrom-Json
 $workflow = Get-Content -LiteralPath (Join-Path $root 'workflow.yaml') -Raw | ConvertFrom-Json
@@ -53,6 +57,7 @@ Assert-Check 'agents_auto_ui_fallback' (($agentRules -match 'UI Preparer') -and 
 $inputContract = Get-Content -LiteralPath (Join-Path $root 'contracts/execution-input.schema.yaml') -Raw
 Assert-Check 'input_has_dual_profiles' ($inputContract -match 'matt_spec_only' -and $inputContract -match 'matt_plus_uiux') 'Both input profiles are required.'
 Assert-Check 'input_does_not_require_approved_plan' (-not ($inputContract -match 'approved_plan')) 'A human-approved plan must not be an intake requirement.'
+Assert-Check 'input_separates_start_authorization' ($inputContract -match 'technical_design_approved_by_human' -and $inputContract -match '"execution_authorized"\s*:\s*\{"type":"boolean"\}') 'Bootstrap must separate technical approval from final execution authorization.'
 Assert-Check 'workflow_starts_at_intake' ($workflow.initial_state -eq 'READY_FOR_INTAKE') $workflow.initial_state
 Assert-Check 'workflow_has_plan_loop' (($workflow.transitions.event -contains 'PLAN_REVIEW_FAILED') -and ($workflow.transitions.event -contains 'PLAN_REVIEW_PASSED')) 'Automatic plan review loop is required.'
 

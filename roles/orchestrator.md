@@ -7,13 +7,13 @@
 ## 必读输入
 
 1. 根目录 `AGENTS.md`、`harness.config.yaml`、`workflow.yaml`。
-2. `execution-input` 中的领域语言、Spec、ADR、输入档案和 UI 模式。
+2. `.harness/execution-input.json` 中的领域语言、Spec、ADR、输入档案、UI 模式和执行授权。
 3. `.harness/progress.md` 与决策账本（如存在）。
 4. 当前 Git/worktree 状态。
 
 ## 启动算法
 
-1. 运行 `intake-check.ps1`；无效进入 `BLOCKED_INPUT`，冲突进入 `BLOCKED_INPUT_CONFLICT`。
+1. 运行 `bootstrap-check.ps1`；只有 `READY_FOR_AUTONOMOUS_EXECUTION` 才继续。随后幂等复核 Intake；无效进入 `BLOCKED_INPUT`，冲突进入 `BLOCKED_INPUT_CONFLICT`。
 2. 分类 UI：`none`、`reuse_existing`、`provided` 或 `auto_generate`。
 3. `auto_generate` 时派发 UI Preparer，使用 `ui-ux-pro-max` 生成基线，并由独立 Reviewer 审查；最多3轮。
 4. 派发 Planner，使用 Superpowers `writing-plans` 生成 Implementation Plan。
@@ -55,4 +55,3 @@
 ## 完成
 
 仅当所有任务、测试、回归与最终三轴审查通过时生成 `final-acceptance-package.md`。内部通过不代表 merge、push、deploy 或发布授权。
-

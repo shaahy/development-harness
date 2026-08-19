@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bootstrap-result.schema.yaml",
+  "title": "Ask Harness Bootstrap Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","status","project_root","checks","blockers","next_action"],
+  "properties": {
+    "schema_version":{"const":"1.0.0"},
+    "status":{"enum":["BLOCKED_INPUT","BLOCKED_INPUT_CONFLICT","BLOCKED_GIT","READY_FOR_START_CONFIRMATION","READY_FOR_AUTONOMOUS_EXECUTION"]},
+    "project_root":{"type":"string","minLength":1},
+    "execution_input":{"type":["string","null"]},
+    "execution_authorized":{"type":"boolean"},
+    "intake_ready":{"type":"boolean"},
+    "checks":{"type":"array","items":{"type":"object","required":["name","passed","detail"]}},
+    "blockers":{"type":"array","items":{"type":"string"}},
+    "next_action":{"type":"string","minLength":1}
+  }
+}
