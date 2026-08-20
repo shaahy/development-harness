@@ -22,12 +22,14 @@ $sourcePath = Join-Path $repoRoot 'harness-source.yaml'
 $configPath = Join-Path $repoRoot 'harness.config.yaml'
 $validatorPath = Join-Path $repoRoot 'checks\validate-harness.ps1'
 $readmePath = Join-Path $repoRoot 'README.md'
+$requirementsGuidePath = Join-Path $repoRoot 'requirements-input\README.md'
 
 Assert-Result 'project_local_skill' (Test-Path -LiteralPath $skillPath -PathType Leaf) $skillPath
 Assert-Result 'project_local_skill_reference' (Test-Path -LiteralPath $referencePath -PathType Leaf) $referencePath
 Assert-Result 'root_harness_entry' (Test-Path -LiteralPath $harnessPath -PathType Leaf) $harnessPath
 Assert-Result 'template_version' (Test-Path -LiteralPath $versionPath -PathType Leaf) $versionPath
 Assert-Result 'template_source' (Test-Path -LiteralPath $sourcePath -PathType Leaf) $sourcePath
+Assert-Result 'requirements_input_folder' (Test-Path -LiteralPath $requirementsGuidePath -PathType Leaf) $requirementsGuidePath
 Assert-Result 'no_root_skill_package' (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'SKILL.md'))) 'The skill must live under .agents/skills/ask-harness.'
 
 $agentRules = if (Test-Path -LiteralPath $agentsPath) { Get-Content -Raw -LiteralPath $agentsPath } else { '' }
@@ -39,6 +41,7 @@ $readmeText = if (Test-Path -LiteralPath $readmePath) { Get-Content -Raw -Litera
 $coreText = $configText + "`n" + $validatorText + "`n" + $agentRules
 Assert-Result 'core_has_no_codex_runtime' ($coreText -notmatch 'codex-app') 'Core configuration, validation, and agent rules must not bind a named host.'
 Assert-Result 'readme_uses_template_project' ($readmeText -match 'Use this template' -and $readmeText -notmatch '\.codex\\skills') 'README must describe template-project usage, not global Codex installation.'
+Assert-Result 'readme_explains_requirements_input' ($readmeText -match [regex]::Escape('requirements-input/')) 'README must tell users where to place requirement documents.'
 
 if (Test-Path -LiteralPath $sourcePath -PathType Leaf) {
     try {

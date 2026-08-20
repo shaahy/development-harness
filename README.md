@@ -28,16 +28,16 @@ gh repo create <owner>/<product-repository> `
 
 ## 2. 克隆后直接启动
 
-把 Matt 产物放入产品项目，在该项目的根任务中发送：
+把用户提供的 Matt 产物和其他需求文档统一放入 `requirements-input/`，然后在该项目的根任务中发送：
 
 ```text
 $ask-harness
 
 项目根目录：<绝对路径>
 Matt 正式输入：
-- <领域语言或 CONTEXT 路径>
-- <Spec 路径>
-- <其他已批准决策或设计文件>
+- requirements-input/<领域语言或 CONTEXT 文件>
+- requirements-input/<Spec 文件>
+- requirements-input/<其他已批准决策或设计文件>
 
 请引导我完成执行前准备；一次只问一个需要我决定的问题。
 Intake 通过后，向我确认一次是否开始自主执行。
