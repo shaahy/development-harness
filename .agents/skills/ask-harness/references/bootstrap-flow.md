@@ -1,103 +1,103 @@
-# Ask Harness Bootstrap Flow
+# Ask Harness Bootstrap 流程
 
-## Outcome
+## 目标结果
 
-The root conversation moves from declared Matt artifacts to one of two truthful outcomes:
+根对话从用户声明的 Matt 产物推进到两个真实结果之一：
 
-- `READY_FOR_START_CONFIRMATION`: project Harness, Git baseline, technical design, execution input, and Intake passed; execution is not authorized.
-- A structured blocker with one decision question.
+- `READY_FOR_START_CONFIRMATION`：项目 Harness、Git 基线、技术设计、执行输入和 Intake 均已通过，但尚未授权执行。
+- 一个结构化阻断项和一个决策问题。
 
-After start authorization, produce `READY_FOR_AUTONOMOUS_EXECUTION` and continue as Orchestrator in the same conversation.
+获得启动授权后，生成 `READY_FOR_AUTONOMOUS_EXECUTION`，并在同一对话中继续担任 Orchestrator。
 
-## State Sequence
+## 状态序列
 
-| State | Required evidence | Allowed next action |
+| 状态 | 必需证据 | 允许的下一步 |
 |---|---|---|
-| `VERIFYING_HARNESS` | Project-local Harness validation | Inspect declared inputs |
-| `DISCOVERING_INPUTS` | Project root and declared paths | Read and classify inputs |
-| `INPUTS_MAPPED` | Authority table and conflicts | Ask one authority question or inspect Git |
-| `GIT_INSPECTED` | Repository, remote, branch, HEAD, dirty state | Resolve one Git blocker or continue |
-| `TECHNICAL_DESIGN` | Missing decisions listed | Use `superpowers:brainstorming`; no code |
-| `BASELINE_READY` | Approved Spec/ADR and clean baseline commit | Generate draft input |
-| `INTAKE_CHECKING` | Draft input and deterministic checks | Repair one blocker or request final start |
-| `READY_FOR_START_CONFIRMATION` | Bootstrap PASS, authorization false | Ask one final question |
-| `READY_FOR_AUTONOMOUS_EXECUTION` | Authorization true and repeated PASS | Load Orchestrator and continue |
+| `VERIFYING_HARNESS` | 项目内 Harness 验证结果 | 检查声明的输入 |
+| `DISCOVERING_INPUTS` | 项目根目录和声明路径 | 读取并分类输入 |
+| `INPUTS_MAPPED` | 权威表和冲突记录 | 询问一个权威问题或检查 Git |
+| `GIT_INSPECTED` | 仓库、远程地址、分支、HEAD、脏状态 | 解决一个 Git 阻断或继续 |
+| `TECHNICAL_DESIGN` | 缺失决策清单 | 使用 `superpowers:brainstorming`，不得编码 |
+| `BASELINE_READY` | 已批准的 Spec/ADR 和干净的基线提交 | 生成草稿输入 |
+| `INTAKE_CHECKING` | 草稿输入和确定性检查 | 修复一个阻断项或请求最终启动 |
+| `READY_FOR_START_CONFIRMATION` | Bootstrap 通过、执行授权为 false | 提出一个最终问题 |
+| `READY_FOR_AUTONOMOUS_EXECUTION` | 执行授权为 true 且再次检查通过 | 加载 Orchestrator 并继续 |
 
-Use exact contract states. A semantic or authority contradiction is `BLOCKED_INPUT_CONFLICT`; Git or template-remote failures are `BLOCKED_GIT`.
+使用准确的契约状态。语义或权威矛盾为 `BLOCKED_INPUT_CONFLICT`；Git 或模板远程仓库失败为 `BLOCKED_GIT`。
 
-## Project-Local Harness
+## 项目内 Harness
 
-The project template already contains the Harness. Locate the repository root by walking upward from this Skill until `HARNESS.md`, `AGENTS.md`, and `harness.config.yaml` are found, then run `checks/validate-harness.ps1`.
+项目模板已经包含 Harness。从本技能目录向上查找，直到发现同时包含 `HARNESS.md`、`AGENTS.md` 和 `harness.config.yaml` 的仓库根目录，然后运行 `checks/validate-harness.ps1`。
 
-- Do not request global Skill installation.
-- Do not copy the Harness into the same project again.
-- Do not inspect or branch on host product names.
-- Do not replace real multi-agent execution with a single-agent fallback.
-- A validation failure is a real blocker; report the failed check and repair only safe deterministic drift.
+- 不请求全局安装技能。
+- 不向同一项目重复复制 Harness。
+- 不检查宿主产品名称，也不按宿主名称分支。
+- 不以单 Agent 降级替代真实多 Agent 执行。
+- 验证失败是真实阻断；报告失败检查，只修复安全、确定性的漂移。
 
-## Input Classification
+## 输入分类
 
-Use this exact authority table shape:
+使用以下固定权威表结构：
 
-| File | Classification | Approval status | Binding scope | Conflict |
+| 文件 | 分类 | 批准状态 | 约束范围 | 冲突 |
 |---|---|---|---|---|
 
-Classifications:
+分类值保持为：
 
-- `formal_authority`: approved Spec, ADR, UI Contract, or equivalent.
-- `approved_decision`: confirmed supporting decision record.
-- `reference`: useful but non-binding material.
-- `historical_evidence`: old implementation or test claims; never current PASS evidence.
-- `conflict`: incompatible statements without a higher authority.
+- `formal_authority`：已批准的 Spec、ADR、UI Contract 或等价文件。
+- `approved_decision`：已确认的支持性决策记录。
+- `reference`：有用但不具约束力的资料。
+- `historical_evidence`：旧实现或测试声明，不能作为当前通过证据。
+- `conflict`：缺少更高权威裁决的互斥陈述。
 
-Do not infer approval from filenames, completeness, or confident language. Current explicit user decisions outrank stored documents and must be recorded.
+不得根据文件名、完整程度或自信语气推断批准状态。用户当前的明确决策高于已存文件，且必须记录。
 
-## Git and Template Remote
+## Git 与模板远程仓库
 
-Inspect the repository before creating a baseline:
+建立基线前检查仓库：
 
-- Existing dirty repository: do not stage, commit, stash, reset, or create a worktree until user changes are identified and safely isolated.
-- Existing clean repository: preserve branch and history.
-- Missing repository: preview `scripts/initialize-project.ps1`; ask before applying.
-- `origin` equals the `template_repository` recorded in `harness-source.yaml`: return `BLOCKED_GIT`. The user must create/select a product repository or explicitly keep the work local before product commits.
-- Repository created through GitHub `Use this template`: preserve its product `origin`; no extra remote setup is required.
+- 已存在且有未提交改动：在识别并安全隔离用户改动前，不得暂存、提交、stash、reset 或创建 worktree。
+- 已存在且干净：保留当前分支和历史。
+- 尚未初始化：先预览 `scripts/initialize-project.ps1`，获得授权后再应用。
+- `origin` 等于 `harness-source.yaml` 中的 `template_repository`：返回 `BLOCKED_GIT`。产品提交前，用户必须创建或选择产品仓库，或者明确仅保留本地工作。
+- 通过 GitHub `Use this template` 创建的仓库：保留其产品 `origin`，无需额外配置远程仓库。
 
-Before a baseline commit, report the exact staged-file whitelist and ask authorization. Never use broad staging when unrelated changes exist.
+基线提交前，报告准确的暂存文件白名单并请求授权。存在无关改动时不得广泛暂存。
 
-## Technical Readiness
+## 技术就绪度
 
-Implementation-critical choices include platform/runtime, framework, process/module boundaries, persistence, migrations, security boundary, error recovery, build/launch contract, and verification strategy.
+实施关键决策包括平台/运行时、框架、进程或模块边界、持久化、迁移、安全边界、错误恢复、构建/启动契约和验证策略。
 
-If absent or contradictory, use `superpowers:brainstorming`. Resolve one material decision at a time and write an ADR only after confirmation. UI details may remain `auto_detect`; product behavior may not.
+缺失或矛盾时使用 `superpowers:brainstorming`。每次解决一个重要决策，确认后才能写入 ADR。UI 细节可以保留为 `auto_detect`，产品行为不能留空。
 
-## Input and Intake
+## 执行输入与 Intake
 
-Use `scripts/new-execution-input.ps1` only after Spec and technical-design approval. The first run omits `-ExecutionAuthorized`.
+只有在 Spec 和技术设计批准后才使用 `scripts/new-execution-input.ps1`。首次运行不传入 `-ExecutionAuthorized`。
 
-Then run:
+然后运行：
 
 ```powershell
 checks/bootstrap-check.ps1 -TargetRoot <project> -ExecutionInputPath <project>/.harness/execution-input.json
 ```
 
-Do not translate a failing result into PASS. Repair deterministic failures automatically when safe; semantic conflicts require the user.
+不得把失败结果解释为通过。安全的确定性失败可以自动修复；语义冲突必须交由用户裁决。
 
-## Final Handoff
+## 最终交接
 
-At `READY_FOR_START_CONFIRMATION`, report confirmed authorities, Harness version, Git branch and baseline commit, approved technical ADR, input path and UI mode, Intake result, and remaining risks.
+到达 `READY_FOR_START_CONFIRMATION` 时，报告已确认权威、Harness 版本、Git 分支和基线提交、已批准技术 ADR、输入路径和 UI 模式、Intake 结果及剩余风险。
 
-Ask only: `是否授权现在开始自主执行？`
+只询问：`是否授权现在开始自主执行？`
 
-If yes, regenerate the input with `-ExecutionAuthorized`, rerun Bootstrap, require `READY_FOR_AUTONOMOUS_EXECUTION`, load `roles/orchestrator.md`, create the execution Todo, and proceed without a new conversation or pasted handoff prompt.
+用户确认后，用 `-ExecutionAuthorized` 重新生成输入，再次运行 Bootstrap，必须得到 `READY_FOR_AUTONOMOUS_EXECUTION`；随后加载 `roles/orchestrator.md`，建立执行 Todo，并在同一对话中继续，无需粘贴交接提示词。
 
-## Common Mistakes
+## 常见错误
 
-| Mistake | Required correction |
+| 错误 | 必须采取的纠正方式 |
 |---|---|
-| Reinstalling a Harness already present in the template | Validate the project-local Harness |
-| Branching on host product names | Use the fixed multi-agent execution contract |
-| Treating the template repository as the product remote | Stop with `BLOCKED_GIT` before product commits |
-| Asking several decisions together | Ask one material question, record it, resume |
-| Treating old green tests as current proof | Mark historical and regenerate evidence |
-| Marking Intake PASS with unresolved architecture | Use brainstorming and an approved ADR first |
-| Starting a new root task after Intake | Continue in the same root conversation |
+| 重复安装模板中已有的 Harness | 验证项目内 Harness |
+| 按宿主产品名称分支 | 使用固定的多 Agent 执行契约 |
+| 把模板仓库作为产品远程仓库 | 产品提交前以 `BLOCKED_GIT` 停止 |
+| 一次询问多个决策 | 每次只询问一个重要问题，记录后继续 |
+| 把旧的绿色测试作为当前证据 | 标为历史证据并重新生成验证证据 |
+| 架构未解决却把 Intake 标为通过 | 先通过 brainstorming 形成已批准 ADR |
+| Intake 后启动新的根任务 | 在同一根对话中继续 |

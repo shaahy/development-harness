@@ -1,4 +1,8 @@
-# Execution Harness Agent Rules
+# 执行 Harness Agent 规则
+
+## 0. 交互语言
+
+所有面向用户的对话、提问、Todo、进度更新、报告、阻断说明、测试结论和下一步行动必须使用简体中文，并称呼用户为“怡哥”。状态码、事件名、JSON/YAML 字段、命令、文件路径、技能名称和代码标识保持原文；向用户展示状态码时，必须同时给出中文解释。
 
 本文件约束 Matt Spec 已确认后的自主交付阶段。Harness 可以自动补齐必要的 UI 基线和 Implementation Plan，但无权重新定义产品或发布边界。
 

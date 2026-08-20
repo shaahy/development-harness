@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string]$TargetRoot,
     [Parameter(Mandatory = $true)] [string]$ExecutionInputPath
@@ -29,7 +29,7 @@ function Resolve-InRoot {
     $combined=if([IO.Path]::IsPathRooted($Candidate)){$Candidate}else{Join-Path $root $Candidate}
     $full=[IO.Path]::GetFullPath($combined)
     $prefix=$root.TrimEnd('\','/')+[IO.Path]::DirectorySeparatorChar
-    if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){throw "Path is outside target root: $Candidate"}
+    if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){throw "路径位于目标根目录之外：$Candidate"}
     $full
 }
 function Normalize-GitRemote {
@@ -40,52 +40,52 @@ function Normalize-GitRemote {
     ($value.TrimEnd('/') -replace '\.git$','').ToLowerInvariant()
 }
 
-Add-Check 'target_root_exists' (Test-Path -LiteralPath $root -PathType Container) $root 'Target project does not exist.'
-Add-Check 'execution_input_exists' (Test-Path -LiteralPath $inputPath -PathType Leaf) $inputPath 'Execution input is missing.'
+Add-Check 'target_root_exists' (Test-Path -LiteralPath $root -PathType Container) $root '目标项目不存在。'
+Add-Check 'execution_input_exists' (Test-Path -LiteralPath $inputPath -PathType Leaf) $inputPath '执行输入缺失。'
 if ($blockers.Count -gt 0) {
-    [pscustomobject]@{schema_version='1.0.0';status='BLOCKED_INPUT';project_root=$root;checks=$checks;blockers=$blockers;next_action='Repair the missing bootstrap input.'}|ConvertTo-Json -Depth 8
+    [pscustomobject]@{schema_version='1.0.0';status='BLOCKED_INPUT';project_root=$root;checks=$checks;blockers=$blockers;next_action='补齐缺失的 Bootstrap 输入。'}|ConvertTo-Json -Depth 8
     exit 2
 }
 
 $input = Get-Content -LiteralPath $inputPath -Raw | ConvertFrom-Json
-Add-Check 'target_root_matches_input' ([IO.Path]::GetFullPath([string]$input.target_root) -eq $root) ([string]$input.target_root) 'Execution input targets a different project.'
+Add-Check 'target_root_matches_input' ([IO.Path]::GetFullPath([string]$input.target_root) -eq $root) ([string]$input.target_root) '执行输入指向了其他项目。'
 foreach ($required in @('AGENTS.md','HARNESS.md','HARNESS_VERSION','harness-source.yaml','.agents\skills\ask-harness\SKILL.md','harness.config.yaml','workflow.yaml','roles\orchestrator.md','checks\intake-check.ps1')) {
-    Add-Check "harness_$required" (Test-Path -LiteralPath (Join-Path $root $required) -PathType Leaf) $required "Harness file missing: $required"
+    Add-Check "harness_$required" (Test-Path -LiteralPath (Join-Path $root $required) -PathType Leaf) $required "Harness 文件缺失：$required"
 }
 
 $gitPrefix=@('-c','core.excludesFile=','-C',$root)
 $inside=Invoke-GitCapture ($gitPrefix+@('rev-parse','--is-inside-work-tree'))
 $isGit=$inside.exit_code -eq 0 -and $inside.output -eq 'true'
-Add-Check 'git_repository' $isGit $inside.output 'Git repository is not initialized.'
+Add-Check 'git_repository' $isGit $inside.output 'Git 仓库尚未初始化。'
 if ($isGit) {
     $head=Invoke-GitCapture ($gitPrefix+@('rev-parse','HEAD'))
-    Add-Check 'git_has_baseline_commit' ($head.exit_code -eq 0) $head.output 'Git baseline commit is missing.'
+    Add-Check 'git_has_baseline_commit' ($head.exit_code -eq 0) $head.output 'Git 基线提交缺失。'
     $status=(Invoke-GitCapture ($gitPrefix+@('status','--porcelain'))).output
-    Add-Check 'git_worktree_clean' ([string]::IsNullOrWhiteSpace($status)) $(if($status){$status}else{'clean'}) 'Project contains uncommitted changes.'
+    Add-Check 'git_worktree_clean' ([string]::IsNullOrWhiteSpace($status)) $(if($status){$status}else{'干净'}) '项目包含未提交改动。'
     $origin=(Invoke-GitCapture ($gitPrefix+@('config','--get','remote.origin.url'))).output
     $templateSource=Get-Content -LiteralPath (Join-Path $root 'harness-source.yaml') -Raw | ConvertFrom-Json
     $normalizedOrigin=Normalize-GitRemote $origin
     $normalizedTemplate=Normalize-GitRemote ([string]$templateSource.template_repository)
     $usesTemplateRemote=-not [string]::IsNullOrWhiteSpace($normalizedOrigin) -and $normalizedOrigin -eq $normalizedTemplate
-    Add-Check 'git_product_origin' (-not $usesTemplateRemote) $(if($origin){$origin}else{'not configured; local-only'}) 'origin still points to the Harness template repository; select a product repository before product commits.'
+    Add-Check 'git_product_origin' (-not $usesTemplateRemote) $(if($origin){$origin}else{'未配置，仅本地'}) 'origin 仍指向 Harness 模板仓库；产品提交前请选择产品仓库。'
 }
 
-Add-Check 'spec_approved' ($input.authorization.spec_approved_by_human -eq $true) ([string]$input.authorization.spec_approved_by_human) 'Spec approval is missing.'
-Add-Check 'technical_design_approved' ($input.authorization.technical_design_approved_by_human -eq $true) ([string]$input.authorization.technical_design_approved_by_human) 'Technical design approval is missing.'
+Add-Check 'spec_approved' ($input.authorization.spec_approved_by_human -eq $true) ([string]$input.authorization.spec_approved_by_human) 'Spec 批准缺失。'
+Add-Check 'technical_design_approved' ($input.authorization.technical_design_approved_by_human -eq $true) ([string]$input.authorization.technical_design_approved_by_human) '技术设计批准缺失。'
 
 foreach ($authorityName in @('domain_context','spec')) {
     try {
         $path=Resolve-InRoot ([string]$input.authorities.$authorityName)
         $valid=(Test-Path -LiteralPath $path -PathType Leaf) -and (Get-Item -LiteralPath $path).Length -gt 0
-        Add-Check "authority_$authorityName" $valid $path "Authority missing: $authorityName"
-    } catch { Add-Check "authority_$authorityName" $false $_.Exception.Message "Authority invalid: $authorityName" }
+        Add-Check "authority_$authorityName" $valid $path "权威文件缺失：$authorityName"
+    } catch { Add-Check "authority_$authorityName" $false $_.Exception.Message "权威文件无效：$authorityName" }
 }
 foreach ($adr in @($input.authorities.adr)) {
     try {
         $path=Resolve-InRoot ([string]$adr)
         $valid=(Test-Path -LiteralPath $path -PathType Leaf) -and (Get-Item -LiteralPath $path).Length -gt 0
-        Add-Check 'authority_adr' $valid $path 'Technical decision authority is missing.'
-    } catch { Add-Check 'authority_adr' $false $_.Exception.Message 'Technical decision authority is invalid.' }
+        Add-Check 'authority_adr' $valid $path '技术决策权威文件缺失。'
+    } catch { Add-Check 'authority_adr' $false $_.Exception.Message '技术决策权威文件无效。' }
 }
 
 $intakeReady=$false
@@ -116,12 +116,12 @@ if ($blockers.Count -eq 0) {
     $intakeCode=$LASTEXITCODE
     try { $intakeResult=($intakeOutput -join [Environment]::NewLine)|ConvertFrom-Json; $intakeReady=$intakeCode -eq 0 -and $intakeResult.ready -eq $true }
     catch { $intakeReady=$false }
-    Add-Check 'intake_ready' $intakeReady $(if($intakeOutput){$intakeOutput -join [Environment]::NewLine}else{'no output'}) 'Intake check failed.'
+    Add-Check 'intake_ready' $intakeReady $(if($intakeOutput){$intakeOutput -join [Environment]::NewLine}else{'无输出'}) 'Intake 检查失败。'
 }
 
 $gitFailed = @($checks | Where-Object { $_.name -like 'git_*' -and -not $_.passed }).Count -gt 0
 $status = if ($gitFailed) { 'BLOCKED_GIT' } elseif ($blockers.Count -gt 0) { 'BLOCKED_INPUT' } elseif ($input.authorization.execution_authorized -eq $true) { 'READY_FOR_AUTONOMOUS_EXECUTION' } else { 'READY_FOR_START_CONFIRMATION' }
-$next = if ($status -eq 'READY_FOR_START_CONFIRMATION') { 'Ask one final question: whether to authorize autonomous execution.' } elseif ($status -eq 'READY_FOR_AUTONOMOUS_EXECUTION') { 'Load roles/orchestrator.md in the same root conversation and continue.' } else { 'Resolve one blocker at a time and rerun bootstrap-check.' }
+$next = if ($status -eq 'READY_FOR_START_CONFIRMATION') { '只询问一个最终问题：是否授权自主执行？' } elseif ($status -eq 'READY_FOR_AUTONOMOUS_EXECUTION') { '在同一根对话中加载 roles/orchestrator.md 并继续执行。' } else { '每次解决一个阻断项，然后重新运行 bootstrap-check。' }
 
 [pscustomobject]@{
     schema_version='1.0.0';status=$status;project_root=$root;execution_input=$inputPath

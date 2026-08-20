@@ -1,33 +1,32 @@
-# Plan Evidence
+# 计划证据
 
-## Run
+## 运行信息
 
-- Feature ID:
-- Input profile:
-- UI mode:
-- Domain context:
-- Approved Spec:
-- UI authority:
-- Generated plan:
+- 功能 ID：
+- 输入档案：
+- UI 模式：
+- 领域上下文：
+- 已批准 Spec：
+- UI 权威：
+- 已生成计划：
 
-## Coverage
+## 覆盖关系
 
-| Spec requirement | Plan task(s) | Covered | Evidence |
+| Spec 要求 | 计划任务 | 是否覆盖 | 证据 |
 |---|---|---|---|
 
-## Review Rounds
+## 审查轮次
 
-| Round | Coverage | Dependencies | Task size | Interfaces | TDD | Verification | Placeholders | Result |
+| 轮次 | 覆盖 | 依赖 | 任务粒度 | 接口 | TDD | 验证 | 占位符 | 结果 |
 |---|---|---|---|---|---|---|---|---|
 
-## Findings and Closure
+## 发现与关闭情况
 
-| Finding | Severity | Required change | Closure evidence |
+| 发现 | 严重级别 | 必须修改 | 关闭证据 |
 |---|---|---|---|
 
-## Execution Decision
+## 执行决定
 
-- Independent Plan Reviewer result:
-- Default execution mode: `subagent-driven-development`
-- Next event:
-
+- 独立 Plan Reviewer 结果：
+- 默认执行模式：`subagent-driven-development`
+- 下一事件：

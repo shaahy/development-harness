@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string]$TargetRoot,
     [switch]$Apply
@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $target = [IO.Path]::GetFullPath($TargetRoot)
-if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "Target project not found: $target" }
+if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "未找到目标项目：$target" }
 
 function Invoke-GitCapture {
     param([string[]]$Arguments)
@@ -27,7 +27,7 @@ if ($inside.exit_code -eq 0 -and $inside.output -eq 'true') {
     [pscustomobject]@{
         schema_version='1.0.0'; status='EXISTING_REPOSITORY'; applied=$false; target_root=$target
         branch=$branch; head=$(if($headResult.exit_code -eq 0){$headResult.output}else{$null})
-        dirty=(-not [string]::IsNullOrWhiteSpace($status)); next_action='Preserve existing history; inspect changes before baseline decisions.'
+        dirty=(-not [string]::IsNullOrWhiteSpace($status)); next_action='保留现有历史；在决定基线前检查当前改动。'
     } | ConvertTo-Json -Depth 5
     exit 0
 }
@@ -35,16 +35,16 @@ if ($inside.exit_code -eq 0 -and $inside.output -eq 'true') {
 if (-not $Apply) {
     [pscustomobject]@{
         schema_version='1.0.0'; status='READY_TO_INITIALIZE'; applied=$false; target_root=$target
-        branch='main'; next_action='Obtain user authorization, then rerun with -Apply.'
+        branch='main'; next_action='获得用户授权后，使用 -Apply 重新运行。'
     } | ConvertTo-Json -Depth 5
     exit 0
 }
 
 $initialized = Invoke-GitCapture ($gitPrefix + @('init','-b','main'))
-if ($initialized.exit_code -ne 0) { throw "git init failed: $($initialized.output)" }
+if ($initialized.exit_code -ne 0) { throw "git init 失败：$($initialized.output)" }
 $branch = (Invoke-GitCapture ($gitPrefix + @('branch','--show-current'))).output
 
 [pscustomobject]@{
     schema_version='1.0.0'; status='INITIALIZED'; applied=$true; target_root=$target
-    branch=$branch; head=$null; dirty=$true; next_action='Review files and create an explicit baseline commit.'
+    branch=$branch; head=$null; dirty=$true; next_action='检查文件，并在明确授权后创建基线提交。'
 } | ConvertTo-Json -Depth 5

@@ -1,4 +1,4 @@
-# Debugger Role
+# Debugger 角色
 
 ## 使命
 

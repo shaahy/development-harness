@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
@@ -48,35 +48,36 @@ foreach ($operation in @('merge','push','deploy','publish','release')) {
     Assert-Check "forbidden:$operation" ($forbidden -contains $operation) ($forbidden -join ',')
 }
 
-$agentRules = Get-Content -LiteralPath (Join-Path $root 'AGENTS.md') -Raw
-$harnessRules = Get-Content -LiteralPath (Join-Path $root 'HARNESS.md') -Raw
-$skillRules = Get-Content -LiteralPath (Join-Path $root '.agents/skills/ask-harness/SKILL.md') -Raw
-Assert-Check 'project_local_skill_route' ($agentRules -match [regex]::Escape('$ask-harness') -and $agentRules -match [regex]::Escape('.agents/skills/ask-harness/SKILL.md')) 'AGENTS.md must route $ask-harness to the project-local Skill.'
-Assert-Check 'platform_independent_core' ($config.PSObject.Properties.Name -notcontains 'runtime') 'Core Harness configuration must not declare a named host runtime.'
-Assert-Check 'skill_requires_real_multi_agent' ($skillRules -match 'fully capable multi-agent development environment' -and $skillRules -match 'Do not identify the host' -and $skillRules -match 'fallback execution modes') 'The project Skill must assume full multi-agent capability without host detection or fallback.'
-Assert-Check 'external_actions_remain_gated' (($forbidden -contains 'merge') -and ($forbidden -contains 'push') -and ($forbidden -contains 'deploy')) 'Configuration must keep merge, push, and deploy gated.'
-Assert-Check 'agents_requires_fresh_evidence' ($agentRules -match 'commit SHA' -and $agentRules -match 'Reviewer') 'AGENTS.md must require commit and independent review evidence.'
-Assert-Check 'agents_prevents_test_tampering' ($agentRules -match 'Tester' -and $agentRules -match 'Debugger') 'AGENTS.md must separate test and debug roles.'
-Assert-Check 'agents_starts_from_spec' ($agentRules -match 'matt_spec_only' -and $agentRules -match 'writing-plans') 'AGENTS.md must accept Matt Spec and auto-generate the plan.'
-Assert-Check 'agents_auto_ui_fallback' (($agentRules -match 'UI Preparer') -and ($agentRules -match 'ui-ux-pro-max')) 'AGENTS.md must define automatic UI fallback.'
+$agentRules = [IO.File]::ReadAllText((Join-Path $root 'AGENTS.md'), [Text.Encoding]::UTF8)
+$harnessRules = [IO.File]::ReadAllText((Join-Path $root 'HARNESS.md'), [Text.Encoding]::UTF8)
+$skillRules = [IO.File]::ReadAllText((Join-Path $root '.agents/skills/ask-harness/SKILL.md'), [Text.Encoding]::UTF8)
+Assert-Check 'project_local_skill_route' ($agentRules -match [regex]::Escape('$ask-harness') -and $agentRules -match [regex]::Escape('.agents/skills/ask-harness/SKILL.md')) 'AGENTS.md 必须把 $ask-harness 路由到项目内技能。'
+Assert-Check 'platform_independent_core' ($config.PSObject.Properties.Name -notcontains 'runtime') 'Harness 核心配置不得声明特定宿主运行时。'
+Assert-Check 'skill_requires_real_multi_agent' ($skillRules -match '具备完整能力的多 Agent 开发环境' -and $skillRules -match '不要识别宿主' -and $skillRules -match '降级执行模式') '项目技能必须假设完整多 Agent 能力，不得检测宿主或设计降级方案。'
+Assert-Check 'user_facing_language_chinese' ($agentRules -match '简体中文' -and $harnessRules -match '简体中文' -and $skillRules -match '简体中文') 'AGENTS.md、HARNESS.md 和 Ask Harness 技能必须统一规定简体中文交互。'
+Assert-Check 'external_actions_remain_gated' (($forbidden -contains 'merge') -and ($forbidden -contains 'push') -and ($forbidden -contains 'deploy')) '配置必须继续限制 merge、push 和 deploy。'
+Assert-Check 'agents_requires_fresh_evidence' ($agentRules -match 'commit SHA' -and $agentRules -match 'Reviewer') 'AGENTS.md 必须要求提交和独立审查证据。'
+Assert-Check 'agents_prevents_test_tampering' ($agentRules -match 'Tester' -and $agentRules -match 'Debugger') 'AGENTS.md 必须分离测试与调试角色。'
+Assert-Check 'agents_starts_from_spec' ($agentRules -match 'matt_spec_only' -and $agentRules -match 'writing-plans') 'AGENTS.md 必须接受 Matt Spec 并自动生成计划。'
+Assert-Check 'agents_auto_ui_fallback' (($agentRules -match 'UI Preparer') -and ($agentRules -match 'ui-ux-pro-max')) 'AGENTS.md 必须定义自动 UI 补齐机制。'
 
 $inputContract = Get-Content -LiteralPath (Join-Path $root 'contracts/execution-input.schema.yaml') -Raw
-Assert-Check 'input_has_dual_profiles' ($inputContract -match 'matt_spec_only' -and $inputContract -match 'matt_plus_uiux') 'Both input profiles are required.'
-Assert-Check 'input_does_not_require_approved_plan' (-not ($inputContract -match 'approved_plan')) 'A human-approved plan must not be an intake requirement.'
-Assert-Check 'input_separates_start_authorization' ($inputContract -match 'technical_design_approved_by_human' -and $inputContract -match '"execution_authorized"\s*:\s*\{"type":"boolean"\}') 'Bootstrap must separate technical approval from final execution authorization.'
+Assert-Check 'input_has_dual_profiles' ($inputContract -match 'matt_spec_only' -and $inputContract -match 'matt_plus_uiux') '必须支持两种输入档案。'
+Assert-Check 'input_does_not_require_approved_plan' (-not ($inputContract -match 'approved_plan')) 'Intake 不得要求人工批准计划。'
+Assert-Check 'input_separates_start_authorization' ($inputContract -match 'technical_design_approved_by_human' -and $inputContract -match '"execution_authorized"\s*:\s*\{"type":"boolean"\}') 'Bootstrap 必须区分技术批准与最终执行授权。'
 Assert-Check 'workflow_starts_at_intake' ($workflow.initial_state -eq 'READY_FOR_INTAKE') $workflow.initial_state
-Assert-Check 'workflow_has_plan_loop' (($workflow.transitions.event -contains 'PLAN_REVIEW_FAILED') -and ($workflow.transitions.event -contains 'PLAN_REVIEW_PASSED')) 'Automatic plan review loop is required.'
+Assert-Check 'workflow_has_plan_loop' (($workflow.transitions.event -contains 'PLAN_REVIEW_FAILED') -and ($workflow.transitions.event -contains 'PLAN_REVIEW_PASSED')) '必须存在自动计划审查循环。'
 
 $exactKeys = @{}
 foreach ($transition in $workflow.transitions) {
     $key = "$($transition.from)|$($transition.event)"
     if ($exactKeys.ContainsKey($key)) {
-        $errors.Add("duplicate transition: $key")
+        $errors.Add("重复状态转换：$key")
     } else {
         $exactKeys[$key] = $true
     }
 }
-Assert-Check 'workflow_transition_keys_unique' (-not ($errors | Where-Object { $_ -like 'duplicate transition:*' })) 'Duplicate from/event transitions are not allowed.'
+Assert-Check 'workflow_transition_keys_unique' (-not ($errors | Where-Object { $_ -like '重复状态转换：*' })) '不允许重复的 from/event 状态转换。'
 $terminalWithOutgoing = @($workflow.terminal_states | Where-Object { $terminal = $_; $workflow.transitions | Where-Object { $_.from -eq $terminal } })
 Assert-Check 'terminal_states_have_no_outgoing_transition' ($terminalWithOutgoing.Count -eq 0) ($terminalWithOutgoing -join ',')
 

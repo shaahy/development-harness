@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string]$TargetRoot,
     [Parameter(Mandatory = $true)] [string]$SpecPath,
@@ -24,11 +24,11 @@ function Invoke-GitCapture {
 }
 function Resolve-InRoot {
     param([string]$Root,[string]$Candidate)
-    if ([string]::IsNullOrWhiteSpace($Candidate)) { throw 'Path is empty.' }
+    if ([string]::IsNullOrWhiteSpace($Candidate)) { throw '路径为空。' }
     $combined = if ([IO.Path]::IsPathRooted($Candidate)) { $Candidate } else { Join-Path $Root $Candidate }
     $full = [IO.Path]::GetFullPath($combined)
     $prefix = $Root.TrimEnd([IO.Path]::DirectorySeparatorChar,[IO.Path]::AltDirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
-    if (-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)) { throw "Authority path is outside target root: $Candidate" }
+    if (-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)) { throw "权威路径位于目标根目录之外：$Candidate" }
     $full
 }
 function Test-Authority {
@@ -48,7 +48,7 @@ if (Test-Path -LiteralPath $root -PathType Container) {
         $branch=(Invoke-GitCapture ($gitPrefix+@('branch','--show-current'))).output
         $baseCommit=(Invoke-GitCapture ($gitPrefix+@('rev-parse','HEAD'))).output
         $status=(Invoke-GitCapture ($gitPrefix+@('status','--porcelain'))).output; $dirty=-not [string]::IsNullOrWhiteSpace($status)
-        Add-Check 'worktree_clean_or_explicitly_allowed' (-not $dirty -or $AllowDirtyWorktree.IsPresent) $(if($dirty){'dirty'}else{'clean'})
+        Add-Check 'worktree_clean_or_explicitly_allowed' (-not $dirty -or $AllowDirtyWorktree.IsPresent) $(if($dirty){'有未提交改动'}else{'干净'})
     }
 }
 

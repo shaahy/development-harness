@@ -1,39 +1,39 @@
-# Implementation Evidence
+# 实施证据
 
-## Run
+## 运行信息
 
-- Feature ID:
-- Auto-generated and reviewed Plan:
-- Input profile / UI mode:
-- Worktree:
-- Branch:
-- Base commit:
+- 功能 ID：
+- 自动生成且已审查的计划：
+- 输入档案/UI 模式：
+- Worktree：
+- 分支：
+- 基线提交：
 
-## Task Evidence
+## 任务证据
 
 ### TASK-XXX
 
-- Goal:
-- Authority references:
-- Changed files:
-- Commit SHA:
-- TDD red evidence:
-- TDD green evidence:
-- Focused test command and exit code:
-- Static checks:
-- Runtime/browser/E2E checks:
-- UI contract/token checks:
-- Tester report:
-- Reviewer report:
-- Known concerns:
+- 目标：
+- 权威引用：
+- 修改文件：
+- Commit SHA：
+- TDD 失败证据：
+- TDD 通过证据：
+- 聚焦测试命令和退出码：
+- 静态检查：
+- 运行时/浏览器/E2E 检查：
+- UI Contract/token 检查：
+- Tester 报告：
+- Reviewer 报告：
+- 已知问题：
 
-## Full Regression
+## 全量回归
 
-- Commands:
-- Exit codes:
-- Evidence paths:
-- Scope not covered:
+- 命令：
+- 退出码：
+- 证据路径：
+- 未覆盖范围：
 
-## Evidence Boundary
+## 证据边界
 
 明确区分静态检查、自动化测试、真实运行、视觉比较和人工验收；一种证据不得替代另一种。

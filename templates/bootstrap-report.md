@@ -1,35 +1,35 @@
-# Ask Harness Bootstrap Report
+# Ask Harness Bootstrap 报告
 
-## Project
+## 项目
 
-- Root:
-- Feature ID:
-- Bootstrap state:
+- 根目录：
+- 功能 ID：
+- Bootstrap 状态：
 
-## Declared Authorities
+## 已声明权威
 
-| Type | Path | Status | Notes |
+| 类型 | 路径 | 状态 | 备注 |
 |---|---|---|---|
 
-## Preparation
+## 准备情况
 
-| Gate | Evidence | Result |
+| 关口 | 证据 | 结果 |
 |---|---|---|
-| Harness installation | | |
-| Git repository | | |
-| Baseline commit | | |
-| Spec approval | | |
-| Technical design approval | | |
-| execution-input | | |
+| Harness 安装 | | |
+| Git 仓库 | | |
+| 基线提交 | | |
+| Spec 批准 | | |
+| 技术设计批准 | | |
+| `execution-input` | | |
 | Intake | | |
 
-## Decisions
+## 决策
 
-Record only decisions explicitly confirmed by the user. Historical test claims remain historical evidence and never become current PASS evidence.
+只记录用户明确确认的决策。历史测试声明仍是历史证据，不能成为当前通过证据。
 
-## Blocker or Handoff
+## 阻断或交接
 
-- One current blocker:
-- One question for the user:
-- Execution authorized:
-- Next role/state:
+- 当前唯一阻断项：
+- 向用户提出的唯一问题：
+- 是否已授权执行：
+- 下一角色/状态：

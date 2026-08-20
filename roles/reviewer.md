@@ -1,4 +1,4 @@
-# Reviewer Role
+# Reviewer 角色
 
 ## 使命
 
@@ -57,4 +57,3 @@
 - UI/Plan 使用对应事件与 `plan-result.schema.yaml`/审查证据。
 - Task/Final 使用 `review-result.schema.yaml`。
 - 代码审查第5轮仍有承重问题时返回 `REVIEW_FIX_ROUNDS_EXHAUSTED`。
-

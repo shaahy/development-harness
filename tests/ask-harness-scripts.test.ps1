@@ -27,6 +27,11 @@ function Write-TestFile {
     [IO.File]::WriteAllText($Path,$Value + "`n",[Text.UTF8Encoding]::new($false))
 }
 
+function Test-HasChineseText {
+    param([string]$Value)
+    return -not [string]::IsNullOrWhiteSpace($Value) -and $Value -match '[\u4e00-\u9fff]'
+}
+
 try {
     $fresh = Join-Path $testRoot 'fresh-project'
     $conflict = Join-Path $testRoot 'conflict-project'
@@ -60,9 +65,11 @@ try {
         $preview = Invoke-ScriptJson $installScript @('-TargetRoot',$fresh)
         Assert-Result 'install_preview_no_write' (-not (Test-Path -LiteralPath (Join-Path $fresh 'harness.config.yaml'))) $preview.raw
         Assert-Result 'install_preview_ready' ($preview.exit_code -eq 0 -and $preview.json.status -eq 'READY_TO_INSTALL') $preview.raw
+        Assert-Result 'install_preview_next_action_chinese' (Test-HasChineseText ([string]$preview.json.next_action)) ([string]$preview.json.next_action)
 
         $installed = Invoke-ScriptJson $installScript @('-TargetRoot',$fresh,'-Apply')
         Assert-Result 'install_apply_pass' ($installed.exit_code -eq 0 -and $installed.json.status -eq 'INSTALLED') $installed.raw
+        Assert-Result 'install_apply_next_action_chinese' (Test-HasChineseText ([string]$installed.json.next_action)) ([string]$installed.json.next_action)
         Assert-Result 'install_does_not_copy_git' (-not (Test-Path -LiteralPath (Join-Path $fresh '.git'))) 'Installer must not copy or initialize .git.'
         Assert-Result 'install_places_harness_doc' (Test-Path -LiteralPath (Join-Path $fresh 'HARNESS.md') -PathType Leaf) 'HARNESS.md missing.'
         Assert-Result 'install_places_project_skill' (Test-Path -LiteralPath (Join-Path $fresh '.agents\skills\ask-harness\SKILL.md') -PathType Leaf) 'Project-local ask-harness Skill missing.'
@@ -78,6 +85,7 @@ try {
 
         $gitPreview = Invoke-ScriptJson $gitScript @('-TargetRoot',$fresh)
         Assert-Result 'git_preview_no_write' (-not (Test-Path -LiteralPath (Join-Path $fresh '.git'))) $gitPreview.raw
+        Assert-Result 'git_preview_next_action_chinese' (Test-HasChineseText ([string]$gitPreview.json.next_action)) ([string]$gitPreview.json.next_action)
         $gitApplied = Invoke-ScriptJson $gitScript @('-TargetRoot',$fresh,'-Apply')
         Assert-Result 'git_init_main' ($gitApplied.exit_code -eq 0 -and $gitApplied.json.status -eq 'INITIALIZED' -and $gitApplied.json.branch -eq 'main') $gitApplied.raw
 
@@ -101,11 +109,13 @@ try {
         )
         $draft = Invoke-ScriptJson $inputScript $inputArgs
         Assert-Result 'draft_input_created' ($draft.exit_code -eq 0 -and (Test-Path -LiteralPath $inputPath)) $draft.raw
+        Assert-Result 'draft_next_action_chinese' (Test-HasChineseText ([string]$draft.json.next_action)) ([string]$draft.json.next_action)
         $draftJson = Get-Content -LiteralPath $inputPath -Raw | ConvertFrom-Json
         Assert-Result 'draft_not_execution_authorized' ($draftJson.authorization.execution_authorized -eq $false) ($draftJson.authorization | ConvertTo-Json -Compress)
 
         $beforeStart = Invoke-ScriptJson $bootstrapScript @('-TargetRoot',$fresh,'-ExecutionInputPath',$inputPath)
         Assert-Result 'bootstrap_waits_for_start' ($beforeStart.exit_code -eq 0 -and $beforeStart.json.status -eq 'READY_FOR_START_CONFIRMATION') $beforeStart.raw
+        Assert-Result 'bootstrap_next_action_chinese' (Test-HasChineseText ([string]$beforeStart.json.next_action)) ([string]$beforeStart.json.next_action)
 
         $authorized = Invoke-ScriptJson $inputScript ($inputArgs + @('-ExecutionAuthorized'))
         Assert-Result 'authorized_input_updated' ($authorized.exit_code -eq 0) $authorized.raw

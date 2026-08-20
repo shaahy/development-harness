@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string]$TargetRoot,
     [Parameter(Mandatory = $true)] [string]$DomainContextPath,
@@ -25,11 +25,11 @@ function Add-Check {
 
 function Resolve-InRoot {
     param([string]$Root, [string]$Candidate)
-    if ([string]::IsNullOrWhiteSpace($Candidate)) { throw 'Path is empty.' }
+    if ([string]::IsNullOrWhiteSpace($Candidate)) { throw '路径为空。' }
     $combined = if ([IO.Path]::IsPathRooted($Candidate)) { $Candidate } else { Join-Path $Root $Candidate }
     $full = [IO.Path]::GetFullPath($combined)
     $rootPrefix = $Root.TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
-    if (-not $full.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw "Authority path is outside target root: $Candidate" }
+    if (-not $full.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw "权威路径位于目标根目录之外：$Candidate" }
     return $full
 }
 

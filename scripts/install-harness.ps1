@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string]$TargetRoot,
     [string]$SourceRoot,
@@ -13,8 +13,8 @@ if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
 $source = [IO.Path]::GetFullPath($SourceRoot)
 $target = [IO.Path]::GetFullPath($TargetRoot)
 
-if (-not (Test-Path -LiteralPath $source -PathType Container)) { throw "Harness source not found: $source" }
-if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "Target project not found: $target" }
+if (-not (Test-Path -LiteralPath $source -PathType Container)) { throw "未找到 Harness 源目录：$source" }
+if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "未找到目标项目：$target" }
 
 $fileMap = [ordered]@{
     'AGENTS.md' = 'AGENTS.md'
@@ -51,20 +51,20 @@ function Test-CompatibleDirectory {
 foreach ($entry in $fileMap.GetEnumerator()) {
     $sourcePath = Join-Path $source $entry.Key
     $targetPath = Join-Path $target $entry.Value
-    if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) { throw "Harness source file missing: $sourcePath" }
+    if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) { throw "Harness 源文件缺失：$sourcePath" }
     if (Test-Path -LiteralPath $targetPath) {
         if (Test-SameFile $sourcePath $targetPath) { $skipped.Add($entry.Value) }
-        else { $collisions.Add([pscustomobject]@{path=$entry.Value;reason='existing file differs'}) }
+        else { $collisions.Add([pscustomobject]@{path=$entry.Value;reason='现有文件与 Harness 模板不同'}) }
     } else { $plannedFiles.Add($entry.Value) }
 }
 
 foreach ($directory in $directories) {
     $sourcePath = Join-Path $source $directory
     $targetPath = Join-Path $target $directory
-    if (-not (Test-Path -LiteralPath $sourcePath -PathType Container)) { throw "Harness source directory missing: $sourcePath" }
+    if (-not (Test-Path -LiteralPath $sourcePath -PathType Container)) { throw "Harness 源目录缺失：$sourcePath" }
     if (Test-Path -LiteralPath $targetPath) {
         if (Test-CompatibleDirectory $sourcePath $targetPath) { $skipped.Add($directory) }
-        else { $collisions.Add([pscustomobject]@{path=$directory;reason='existing directory contains missing or different Harness files'}) }
+        else { $collisions.Add([pscustomobject]@{path=$directory;reason='现有目录中的 Harness 文件缺失或内容不同'}) }
     } else { $plannedDirectories.Add($directory) }
 }
 
@@ -73,14 +73,14 @@ foreach ($optional in @('.gitignore','.gitattributes')) {
     $targetPath = Join-Path $target $optional
     if (-not (Test-Path -LiteralPath $targetPath)) { $plannedFiles.Add($optional) }
     elseif (Test-SameFile $sourcePath $targetPath) { $skipped.Add($optional) }
-    else { $warnings.Add("$optional already exists and was preserved; merge Harness entries manually if needed.") }
+    else { $warnings.Add("$optional 已存在并已保留；如有需要，请手动合并 Harness 条目。") }
 }
 
 if ($collisions.Count -gt 0) {
     [pscustomobject]@{
         schema_version='1.0.0'; status='BLOCKED_COLLISION'; applied=$false
         source_root=$source; target_root=$target; collisions=$collisions; warnings=$warnings
-        next_action='Resolve or explicitly merge each collision; do not overwrite user files.'
+        next_action='逐项解决或明确合并冲突，不得覆盖用户文件。'
     } | ConvertTo-Json -Depth 8
     exit 2
 }
@@ -89,7 +89,7 @@ if (-not $Apply) {
     [pscustomobject]@{
         schema_version='1.0.0'; status='READY_TO_INSTALL'; applied=$false
         source_root=$source; target_root=$target; files=$plannedFiles; directories=$plannedDirectories
-        skipped=$skipped; warnings=$warnings; next_action='Obtain user authorization, then rerun with -Apply.'
+        skipped=$skipped; warnings=$warnings; next_action='获得用户授权后，使用 -Apply 重新运行。'
     } | ConvertTo-Json -Depth 8
     exit 0
 }
@@ -116,5 +116,5 @@ foreach ($optional in @('.gitignore','.gitattributes')) {
 [pscustomobject]@{
     schema_version='1.0.0'; status='INSTALLED'; applied=$true
     source_root=$source; target_root=$target; files=$plannedFiles; directories=$plannedDirectories
-    skipped=$skipped; warnings=$warnings; next_action='Inspect Git state and continue bootstrap.'
+    skipped=$skipped; warnings=$warnings; next_action='检查 Git 状态并继续 Bootstrap。'
 } | ConvertTo-Json -Depth 8

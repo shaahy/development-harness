@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string]$TargetRoot,
     [Parameter(Mandatory = $true)] [string]$FeatureId,
@@ -25,15 +25,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($TargetRoot)
-if (-not (Test-Path -LiteralPath $root -PathType Container)) { throw "Target project not found: $root" }
+if (-not (Test-Path -LiteralPath $root -PathType Container)) { throw "未找到目标项目：$root" }
 
 function Resolve-Authority {
     param([string]$Candidate)
     $combined = if ([IO.Path]::IsPathRooted($Candidate)) { $Candidate } else { Join-Path $root $Candidate }
     $full = [IO.Path]::GetFullPath($combined)
     $prefix = $root.TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
-    if (-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)) { throw "Authority is outside target root: $Candidate" }
-    if (-not (Test-Path -LiteralPath $full -PathType Leaf) -or (Get-Item -LiteralPath $full).Length -eq 0) { throw "Authority missing or empty: $Candidate" }
+    if (-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)) { throw "权威文件位于目标根目录之外：$Candidate" }
+    if (-not (Test-Path -LiteralPath $full -PathType Leaf) -or (Get-Item -LiteralPath $full).Length -eq 0) { throw "权威文件缺失或为空：$Candidate" }
     return $full.Substring($prefix.Length).Replace('\','/')
 }
 
@@ -43,13 +43,13 @@ $adrs = @($AdrPaths | ForEach-Object { Resolve-Authority $_ })
 $authorityPayload = [ordered]@{domain_context=$domain;spec=$spec;adr=$adrs}
 
 if ($InputProfile -eq 'matt_plus_uiux' -and $UiMode -ne 'provided') {
-    throw 'matt_plus_uiux requires UiMode provided.'
+    throw 'matt_plus_uiux 要求 UiMode 为 provided。'
 }
 if ($InputProfile -eq 'matt_spec_only' -and $UiMode -eq 'provided') {
-    throw 'matt_spec_only cannot use UiMode provided; select matt_plus_uiux.'
+    throw 'matt_spec_only 不能使用 UiMode provided；请选择 matt_plus_uiux。'
 }
 if ($UiMode -eq 'reuse_existing') {
-    if ($ExistingUiSources.Count -eq 0) { throw 'reuse_existing requires ExistingUiSources.' }
+    if ($ExistingUiSources.Count -eq 0) { throw 'reuse_existing 要求提供 ExistingUiSources。' }
     $authorityPayload.existing_ui_sources = @($ExistingUiSources | ForEach-Object { Resolve-Authority $_ })
 }
 if ($UiMode -eq 'provided') {
@@ -59,14 +59,14 @@ if ($UiMode -eq 'provided') {
     }
     $uiPayload = [ordered]@{}
     foreach ($entry in $uiCandidates.GetEnumerator()) {
-        if ([string]::IsNullOrWhiteSpace([string]$entry.Value)) { throw "provided UI baseline requires $($entry.Key)." }
+        if ([string]::IsNullOrWhiteSpace([string]$entry.Value)) { throw "provided UI 基线要求提供 $($entry.Key)。" }
         $uiPayload[$entry.Key] = Resolve-Authority ([string]$entry.Value)
     }
     $authorityPayload.ui_baseline = $uiPayload
 }
 $output = if ([IO.Path]::IsPathRooted($OutputPath)) { [IO.Path]::GetFullPath($OutputPath) } else { [IO.Path]::GetFullPath((Join-Path $root $OutputPath)) }
 $outputPrefix = $root.TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
-if (-not $output.StartsWith($outputPrefix,[StringComparison]::OrdinalIgnoreCase)) { throw "Output path must be inside target root: $OutputPath" }
+if (-not $output.StartsWith($outputPrefix,[StringComparison]::OrdinalIgnoreCase)) { throw "输出路径必须位于目标根目录内：$OutputPath" }
 $outputDirectory = Split-Path -Parent $output
 if (-not (Test-Path -LiteralPath $outputDirectory)) { $null = New-Item -ItemType Directory -Path $outputDirectory -Force }
 
@@ -103,5 +103,5 @@ $json = $payload | ConvertTo-Json -Depth 10
 [pscustomobject]@{
     schema_version='1.0.0'; status=$(if($ExecutionAuthorized){'AUTHORIZED_INPUT_WRITTEN'}else{'DRAFT_INPUT_WRITTEN'})
     output_path=$output; execution_authorized=[bool]$ExecutionAuthorized; feature_id=$FeatureId
-    next_action=$(if($ExecutionAuthorized){'Run bootstrap-check and hand off to Orchestrator.'}else{'Run Intake, then request final start confirmation.'})
+    next_action=$(if($ExecutionAuthorized){'运行 bootstrap-check，并交接给 Orchestrator。'}else{'运行 Intake，然后请求最终启动确认。'})
 } | ConvertTo-Json -Depth 5

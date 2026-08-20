@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
     [string]$State,
@@ -12,7 +12,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if (-not (Test-Path -LiteralPath $WorkflowPath -PathType Leaf)) {
-    throw "Workflow file not found: $WorkflowPath"
+    throw "未找到工作流文件：$WorkflowPath"
 }
 
 $workflow = Get-Content -LiteralPath $WorkflowPath -Raw | ConvertFrom-Json
@@ -32,11 +32,11 @@ if ($matches.Count -eq 0) {
 
 $exact = @($matches | Where-Object { $_.from -eq $State })
 $selected = if ($exact.Count -eq 1) { $exact[0] } elseif ($exact.Count -gt 1) {
-    throw "Ambiguous exact transition for state '$State' and event '$Event'."
+    throw "状态 '$State' 和事件 '$Event' 存在多个精确状态转换。"
 } elseif ($matches.Count -eq 1) {
     $matches[0]
 } else {
-    throw "Ambiguous wildcard transition for state '$State' and event '$Event'."
+    throw "状态 '$State' 和事件 '$Event' 存在多个通配状态转换。"
 }
 
 [pscustomobject]@{

@@ -1,16 +1,16 @@
-# Decision Ledger
+# 决策账本
 
 记录执行阶段中可逆、局部、不会改变产品或设计合同的主 Agent 裁决。产品行为、设计系统、安全边界和外部副作用不得在此自行裁决。
 
-## Entry Template
+## 条目模板
 
 ```text
-Decision ID:
-Task ID:
-Date:
-Ruling: <决定> — <依据> — <若错误的代价> — <回退方式>
-Authority checked:
-Files/interfaces affected:
-Reversible: yes
-Commit/evidence:
+决策 ID：
+任务 ID：
+日期：
+裁决：<决定> — <依据> — <若错误的代价> — <回退方式>
+已检查权威：
+影响的文件/接口：
+可逆：是
+提交/证据：
 ```

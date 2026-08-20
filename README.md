@@ -1,4 +1,4 @@
-# Development Harness
+# 多 Agent 开发 Harness
 
 面向具备完整能力的多 Agent 开发环境的项目模板。它从已确认的 Matt 领域语言与 Spec 接管，先由项目内置 `$ask-harness` 完成执行前准备，再由主 Agent 自动调度 UI、计划、实施、测试、修复、复测和审查。
 

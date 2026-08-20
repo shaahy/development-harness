@@ -1,55 +1,55 @@
-# Final Acceptance Package
+# 最终验收包
 
-## 1. Delivery Scope
+## 1. 交付范围
 
-- Feature:
-- Approved Spec:
-- Input profile / UI mode:
-- Auto-generated Implementation Plan and review evidence:
-- Worktree / branch:
-- Final commit:
-- Git actions not authorized:
+- 功能：
+- 已批准 Spec：
+- 输入档案/UI 模式：
+- 自动生成的 Implementation Plan 及审查证据：
+- Worktree/分支：
+- 最终提交：
+- 未获授权的 Git 操作：
 
-## 2. What Was Implemented
+## 2. 已实施内容
 
-| Requirement | Task | Commit | Evidence | Result |
+| 要求 | 任务 | 提交 | 证据 | 结果 |
 |---|---|---|---|---|
 
-## 3. Verification Summary
+## 3. 验证摘要
 
-| Gate | Command / method | Result | Evidence |
+| 关口 | 命令/方法 | 结果 | 证据 |
 |---|---|---|---|
-| Focused tests | | | |
-| Full regression | | | |
-| Build | | | |
-| Type/lint | | | |
-| Runtime/E2E | | | |
-| UI/UX contract | | | |
+| 聚焦测试 | | | |
+| 全量回归 | | | |
+| 构建 | | | |
+| 类型/lint | | | |
+| 运行时/E2E | | | |
+| UI/UX Contract | | | |
 
-## 4. Three-Axis Review
+## 4. 三轴审查
 
-- Product/spec compliance:
-- Code quality:
-- Design system/UI Contract compliance or `NOT_APPLICABLE`:
+- 产品/Spec 符合性：
+- 代码质量：
+- 设计系统/UI Contract 符合性，或 `NOT_APPLICABLE`：
 
-## 5. Remaining Risks and Evidence Gaps
+## 5. 剩余风险与证据缺口
 
-- None recorded / list each item explicitly.
+- 无记录项，或逐项明确列出。
 
-## 6. Human Experience Checklist
+## 6. 人工体验检查清单
 
-- [ ] Core user journey behaves as expected.
-- [ ] Loading, empty, error, disabled and success states are acceptable where applicable.
-- [ ] Visual hierarchy, typography, color, spacing and interaction match the frozen contract.
-- [ ] Keyboard, focus, responsive/window behavior and accessibility are acceptable.
-- [ ] Every accepted difference is recorded explicitly.
+- [ ] 核心用户旅程符合预期。
+- [ ] 适用场景中的加载、空、错误、禁用和成功状态均可接受。
+- [ ] 视觉层级、字体、颜色、间距和交互符合冻结合同。
+- [ ] 键盘、焦点、响应式/窗口行为和无障碍表现可接受。
+- [ ] 每项已接受差异均有明确记录。
 
-## 7. Decision Required
+## 7. 待决策事项
 
-Choose only after experience:
+仅在完成体验后选择：
 
-- Accept implementation; keep worktree and request a separate Git integration action.
-- Return specified implementation findings to execution stage.
-- Return a product/design issue to its authority stage.
+- 接受实现，保留 worktree，并单独请求 Git 集成操作。
+- 将指定实施问题退回执行阶段。
+- 将产品/设计问题退回对应权威阶段。
 
-Acceptance does not authorize merge, push, deploy, publish, release or cleanup.
+验收不代表授权 merge、push、deploy、publish、release 或清理。
