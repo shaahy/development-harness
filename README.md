@@ -1,23 +1,34 @@
 # Development Harness
 
-面向 Codex App 的 Spec 后自主开发 Harness。用户把 Matt 领域语言、Spec 和可选设计产物放入项目后，通过 `$ask-harness` 完成安装、Git、技术设计、execution-input 和 Intake 引导；最终确认启动后，同一主对话自动调度 UI、计划、实施、测试、修复和审查。
+面向具备完整能力的多 Agent 开发环境的项目模板。它从已确认的 Matt 领域语言与 Spec 接管，先由项目内置 `$ask-harness` 完成执行前准备，再由主 Agent 自动调度 UI、计划、实施、测试、修复、复测和审查。
 
-## 1. 最短使用方式
+Harness 不绑定开发环境名称，不检测能力，不提供单 Agent 降级模式。
 
-### 一次性安装 Skill
+## 1. 从模板创建产品项目
 
-把本仓库克隆为 Codex Skill：
+不要把产品代码直接开发在 `development-harness` 模板仓库中。在 GitHub 仓库首页选择：
 
-```powershell
-$askHarnessSkillRoot = Join-Path $env:USERPROFILE '.codex\skills\ask-harness'
-git clone https://github.com/shaahy/development-harness.git $askHarnessSkillRoot
+```text
+Use this template
+  -> Create a new repository
+  -> 创建产品自己的仓库
+  -> 克隆产品仓库
 ```
 
-重启 Codex App。此后每个项目不需要手工复制 Harness。
+也可以使用 GitHub CLI：
 
-### 在新项目中启动
+```powershell
+gh repo create <owner>/<product-repository> `
+  --private `
+  --template shaahy/development-harness `
+  --clone
+```
 
-先把 Matt 产物放进项目，然后在以该项目为工作区的新任务中发送：
+从模板创建的产品仓库拥有自己的 `origin`。如果直接克隆 `development-harness`，`$ask-harness` 会在产品基线提交前返回 `BLOCKED_GIT`，防止产品代码误提交到模板仓库。
+
+## 2. 克隆后直接启动
+
+把 Matt 产物放入产品项目，在该项目的根任务中发送：
 
 ```text
 $ask-harness
@@ -28,18 +39,24 @@ Matt 正式输入：
 - <Spec 路径>
 - <其他已批准决策或设计文件>
 
-请引导我完成执行前准备；一次只问一个需要我决定的问题。Intake 通过后，向我确认一次是否开始自主执行。
+请引导我完成执行前准备；一次只问一个需要我决定的问题。
+Intake 通过后，向我确认一次是否开始自主执行。
 ```
 
-Ask Harness 会自己调用安装和检查脚本，不要求用户复制文件、写 JSON 或运行 PowerShell。
-
-## 2. Bootstrap 流程
+根 `AGENTS.md` 会把 `$ask-harness` 路由到：
 
 ```text
-声明 Matt 输入
-  -> 权威分类与冲突检查
-  -> Harness 安装预览 -> 用户授权 -> 安装
-  -> Git 检查/初始化 -> 用户授权
+.agents/skills/ask-harness/SKILL.md
+```
+
+无需全局安装 Skill，也无需再次复制 Harness 文件。
+
+## 3. Bootstrap 流程
+
+```text
+验证项目内置 Harness
+  -> 声明并分类 Matt 输入
+  -> Git 仓库、origin、分支和脏状态检查
   -> 技术设计缺口 -> brainstorming -> 用户确认 ADR
   -> 用户授权基线提交
   -> 自动生成未授权 execution-input
@@ -47,12 +64,12 @@ Ask Harness 会自己调用安装和检查脚本，不要求用户复制文件�
   -> READY_FOR_START_CONFIRMATION
   -> 用户确认开始
   -> READY_FOR_AUTONOMOUS_EXECUTION
-  -> 同一对话切换 Orchestrator
+  -> 同一主对话切换 Orchestrator
 ```
 
-安装、Git 初始化、基线提交、技术设计确认和最终执行授权是相互独立的关卡；前一个确认不会隐含后一个确认。
+Git 初始化、基线提交、技术设计确认和最终执行授权是相互独立的关卡；前一个确认不会隐含后一个确认。
 
-## 3. 自主执行流程
+## 4. 自主执行流程
 
 ```text
 Intake 与 UI 分类
@@ -66,13 +83,13 @@ Intake 与 UI 分类
   -> 人工最终验收
 ```
 
-UI 与 Plan 审查最多3轮；Plan 通过后不再要求人工确认。
+主 Agent 必须派发真实的专业 Agent。UI 与 Plan 审查最多3轮；Plan 通过后不再要求人工确认。
 
-## 4. 两种输入
+## 5. 输入档案
 
 ### `matt_spec_only`
 
-必须提供领域语言、Spec 和已经确认的实施技术基线。默认 `ui_mode: auto_detect`：
+提供领域语言、Spec 和已经确认的实施技术基线。默认 `ui_mode: auto_detect`：
 
 - 无 UI：`none`
 - 复用已有设计：`reuse_existing`
@@ -82,49 +99,32 @@ UI 与 Plan 审查最多3轮；Plan 通过后不再要求人工确认。
 
 除 Matt 输入外，还提供交接清单、UI Contract、tokens、组件规格和状态矩阵；`ui_mode` 为 `provided`。
 
-## 5. 人与 AI 的边界
+## 6. 人与 Harness 的边界
 
-人负责：确认产品和技术基线、裁决权威冲突、授权安装/Git/正式启动、安全或不可逆操作、外部副作用和最终体验。
+人负责：确认产品和技术基线、裁决权威冲突、授权 Git/正式启动、安全或不可逆操作、外部副作用和最终体验。
 
-AI 负责：发现输入、执行机械准备、生成输入、Intake、UI 基线、Implementation Plan、隔离 worktree 提交、TDD、测试、调试、复测、审查与证据。
+Harness 负责：发现输入、机械准备、Intake、必要 UI 基线、Implementation Plan、隔离 worktree 提交、TDD、测试、调试、复测、审查和证据。
 
-历史 issue 中“测试已通过”只能作为历史证据，不能替代本轮验证。
+历史记录中的“测试已通过”只能作为历史证据，不能替代当前代码的本轮验证。
 
-## 6. 安全特性
+## 7. 安全与诊断
 
-- `install-harness.ps1` 默认只预览；`-Apply` 才写入。
-- 不复制 `.git`，不覆盖不同内容的现有文件。
-- 已存在的 `.gitignore`、`.gitattributes` 只报告，不覆盖。
-- `initialize-project.ps1` 默认只检查；需单独授权初始化。
-- execution-input 初始为 `execution_authorized: false`。
+- `execution-input` 初始为 `execution_authorized: false`。
 - 只有 Bootstrap 再次通过且授权为真，才进入 Orchestrator。
-- merge、push、deploy、release、破坏性清理始终需要单独授权。
-
-## 7. 手工与诊断入口
-
-安装预览：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-harness.ps1 -TargetRoot <project>
-```
-
-Bootstrap 检查：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\checks\bootstrap-check.ps1 `
-  -TargetRoot <project> `
-  -ExecutionInputPath <project>\.harness\execution-input.json
-```
+- 同一时间只允许一个写代码 Agent。
+- Tester 与 Debugger 分离，不得修改测试制造通过。
+- merge、push、远程 PR、deploy、release 和破坏性清理始终需要单独授权。
 
 完整自检：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\checks\validate-harness.ps1
+powershell -ExecutionPolicy Bypass -File .\tests\template-repository.test.ps1
 powershell -ExecutionPolicy Bypass -File .\tests\ask-harness-scripts.test.ps1
 ```
 
-## 8. 恢复与限制
+## 8. 版本与恢复
 
-`.harness/progress.md` 是执行恢复依据。中断后用 Git 历史核对 commit SHA，从第一个未闭合事件继续。
+模板版本见 `HARNESS_VERSION`，来源见 `harness-source.yaml`。模板生成的是独立项目快照，后续模板更新不会自动覆盖既有产品。
 
-Harness 是 Codex 主对话中的控制机制，不是后台服务；任务关闭后不会常驻运行。它不持有生产凭证，也不自动执行 Git 集成或发布。
+`.harness/progress.md` 是执行恢复依据。中断后用 Git 历史核对 commit SHA，从第一个未闭合事件继续。Harness 不持有生产凭证，也不自动执行 Git 集成或发布。

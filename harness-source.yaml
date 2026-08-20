@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0.0",
+  "template_repository": "https://github.com/shaahy/development-harness",
+  "harness_version": "1.2.0"
+}

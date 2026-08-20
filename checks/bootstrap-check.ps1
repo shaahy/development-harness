@@ -32,6 +32,13 @@ function Resolve-InRoot {
     if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){throw "Path is outside target root: $Candidate"}
     $full
 }
+function Normalize-GitRemote {
+    param([string]$Remote)
+    $value=([string]$Remote).Trim()
+    if($value -match '^git@github\.com:(.+)$'){$value="https://github.com/$($Matches[1])"}
+    elseif($value -match '^ssh://git@github\.com/(.+)$'){$value="https://github.com/$($Matches[1])"}
+    ($value.TrimEnd('/') -replace '\.git$','').ToLowerInvariant()
+}
 
 Add-Check 'target_root_exists' (Test-Path -LiteralPath $root -PathType Container) $root 'Target project does not exist.'
 Add-Check 'execution_input_exists' (Test-Path -LiteralPath $inputPath -PathType Leaf) $inputPath 'Execution input is missing.'
@@ -42,7 +49,7 @@ if ($blockers.Count -gt 0) {
 
 $input = Get-Content -LiteralPath $inputPath -Raw | ConvertFrom-Json
 Add-Check 'target_root_matches_input' ([IO.Path]::GetFullPath([string]$input.target_root) -eq $root) ([string]$input.target_root) 'Execution input targets a different project.'
-foreach ($required in @('AGENTS.md','harness.config.yaml','workflow.yaml','roles\orchestrator.md','checks\intake-check.ps1')) {
+foreach ($required in @('AGENTS.md','HARNESS.md','HARNESS_VERSION','harness-source.yaml','.agents\skills\ask-harness\SKILL.md','harness.config.yaml','workflow.yaml','roles\orchestrator.md','checks\intake-check.ps1')) {
     Add-Check "harness_$required" (Test-Path -LiteralPath (Join-Path $root $required) -PathType Leaf) $required "Harness file missing: $required"
 }
 
@@ -55,6 +62,12 @@ if ($isGit) {
     Add-Check 'git_has_baseline_commit' ($head.exit_code -eq 0) $head.output 'Git baseline commit is missing.'
     $status=(Invoke-GitCapture ($gitPrefix+@('status','--porcelain'))).output
     Add-Check 'git_worktree_clean' ([string]::IsNullOrWhiteSpace($status)) $(if($status){$status}else{'clean'}) 'Project contains uncommitted changes.'
+    $origin=(Invoke-GitCapture ($gitPrefix+@('config','--get','remote.origin.url'))).output
+    $templateSource=Get-Content -LiteralPath (Join-Path $root 'harness-source.yaml') -Raw | ConvertFrom-Json
+    $normalizedOrigin=Normalize-GitRemote $origin
+    $normalizedTemplate=Normalize-GitRemote ([string]$templateSource.template_repository)
+    $usesTemplateRemote=-not [string]::IsNullOrWhiteSpace($normalizedOrigin) -and $normalizedOrigin -eq $normalizedTemplate
+    Add-Check 'git_product_origin' (-not $usesTemplateRemote) $(if($origin){$origin}else{'not configured; local-only'}) 'origin still points to the Harness template repository; select a product repository before product commits.'
 }
 
 Add-Check 'spec_approved' ($input.authorization.spec_approved_by_human -eq $true) ([string]$input.authorization.spec_approved_by_human) 'Spec approval is missing.'

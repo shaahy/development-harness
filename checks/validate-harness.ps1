@@ -13,7 +13,8 @@ function Assert-Check {
 }
 
 $requiredFiles = @(
-    'AGENTS.md','harness.config.yaml','workflow.yaml',
+    'AGENTS.md','HARNESS.md','HARNESS_VERSION','harness-source.yaml','harness.config.yaml','workflow.yaml',
+    '.agents/skills/ask-harness/SKILL.md','.agents/skills/ask-harness/references/bootstrap-flow.md',
     'roles/orchestrator.md','roles/planner.md','roles/ui-preparer.md','roles/implementer.md','roles/tester.md','roles/debugger.md','roles/reviewer.md',
     'contracts/bootstrap-result.schema.yaml','contracts/execution-input.schema.yaml','contracts/intake-result.schema.yaml','contracts/plan-result.schema.yaml','contracts/task-brief.schema.yaml','contracts/task-result.schema.yaml','contracts/defect.schema.yaml','contracts/review-result.schema.yaml',
     'templates/bootstrap-report.md','templates/progress.md','templates/decision-ledger.md','templates/plan-evidence.md','templates/implementation-evidence.md','templates/final-acceptance-package.md',
@@ -26,13 +27,13 @@ foreach ($relative in $requiredFiles) {
     Assert-Check "file:$relative" (Test-Path -LiteralPath $path -PathType Leaf) $path
 }
 
-$documentationExists = (Test-Path -LiteralPath (Join-Path $root 'README.md') -PathType Leaf) -or (Test-Path -LiteralPath (Join-Path $root 'HARNESS.md') -PathType Leaf)
-Assert-Check 'file:harness_documentation' $documentationExists 'README.md or HARNESS.md is required.'
-
 $config = Get-Content -LiteralPath (Join-Path $root 'harness.config.yaml') -Raw | ConvertFrom-Json
 $workflow = Get-Content -LiteralPath (Join-Path $root 'workflow.yaml') -Raw | ConvertFrom-Json
+$source = Get-Content -LiteralPath (Join-Path $root 'harness-source.yaml') -Raw | ConvertFrom-Json
+$version = (Get-Content -LiteralPath (Join-Path $root 'HARNESS_VERSION') -Raw).Trim()
 
-Assert-Check 'runtime_codex_app' ($config.runtime -eq 'codex-app') $config.runtime
+Assert-Check 'template_source' ($source.template_repository -eq 'https://github.com/shaahy/development-harness') ([string]$source.template_repository)
+Assert-Check 'template_version_consistent' ($version -eq $source.harness_version -and $version -eq $config.schema_version) "$version / $($source.harness_version) / $($config.schema_version)"
 Assert-Check 'single_writer' ($config.concurrency.max_concurrent_writers -eq 1) ([string]$config.concurrency.max_concurrent_writers)
 Assert-Check 'debug_breaker_three' ($config.limits.max_debug_attempts_per_root_cause -eq 3) ([string]$config.limits.max_debug_attempts_per_root_cause)
 Assert-Check 'review_breaker_five' ($config.limits.max_review_fix_rounds_per_task -eq 5) ([string]$config.limits.max_review_fix_rounds_per_task)
@@ -48,6 +49,11 @@ foreach ($operation in @('merge','push','deploy','publish','release')) {
 }
 
 $agentRules = Get-Content -LiteralPath (Join-Path $root 'AGENTS.md') -Raw
+$harnessRules = Get-Content -LiteralPath (Join-Path $root 'HARNESS.md') -Raw
+$skillRules = Get-Content -LiteralPath (Join-Path $root '.agents/skills/ask-harness/SKILL.md') -Raw
+Assert-Check 'project_local_skill_route' ($agentRules -match [regex]::Escape('$ask-harness') -and $agentRules -match [regex]::Escape('.agents/skills/ask-harness/SKILL.md')) 'AGENTS.md must route $ask-harness to the project-local Skill.'
+Assert-Check 'platform_independent_core' ($config.PSObject.Properties.Name -notcontains 'runtime') 'Core Harness configuration must not declare a named host runtime.'
+Assert-Check 'skill_requires_real_multi_agent' ($skillRules -match 'fully capable multi-agent development environment' -and $skillRules -match 'Do not identify the host' -and $skillRules -match 'fallback execution modes') 'The project Skill must assume full multi-agent capability without host detection or fallback.'
 Assert-Check 'external_actions_remain_gated' (($forbidden -contains 'merge') -and ($forbidden -contains 'push') -and ($forbidden -contains 'deploy')) 'Configuration must keep merge, push, and deploy gated.'
 Assert-Check 'agents_requires_fresh_evidence' ($agentRules -match 'commit SHA' -and $agentRules -match 'Reviewer') 'AGENTS.md must require commit and independent review evidence.'
 Assert-Check 'agents_prevents_test_tampering' ($agentRules -match 'Tester' -and $agentRules -match 'Debugger') 'AGENTS.md must separate test and debug roles.'
@@ -101,7 +107,7 @@ if (Test-Path -LiteralPath $scenarioPath -PathType Leaf) {
 
 $valid = $errors.Count -eq 0
 [pscustomobject]@{
-    schema_version = '1.1.0'
+    schema_version = '1.2.0'
     valid = $valid
     root = $root
     check_count = $checks.Count

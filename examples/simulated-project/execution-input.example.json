@@ -25,6 +25,6 @@
   "git": {
     "base_ref": "main",
     "worktree_path": "C:/path/to/worktrees/example",
-    "branch": "codex/example"
+    "branch": "harness/example"
   }
 }

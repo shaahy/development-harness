@@ -2,7 +2,9 @@
 
 本文件约束 Matt Spec 已确认后的自主交付阶段。Harness 可以自动补齐必要的 UI 基线和 Implementation Plan，但无权重新定义产品或发布边界。
 
-如果用户通过 `$ask-harness` 进入，根主对话先完成 Bootstrap；达到 `READY_FOR_AUTONOMOUS_EXECUTION` 后，同一对话切换为 Orchestrator，不要求用户创建新任务或粘贴第二段提示词。
+当用户输入 `$ask-harness` 时，根主 Agent 必须读取 `.agents/skills/ask-harness/SKILL.md`，先在当前对话完成 Bootstrap；达到 `READY_FOR_AUTONOMOUS_EXECUTION` 后，同一对话切换为 Orchestrator，不要求用户创建新任务或粘贴第二段提示词。
+
+本 Harness 直接面向具备完整能力的多 Agent 开发环境。不得按宿主名称分支、建立宿主适配器或提供单 Agent 降级模式。
 
 ## 1. 使命与接管点
 
@@ -36,7 +38,7 @@ Implementation Plan 是自动生成产物，不是人工准入条件。
 ## 4. 技能路由
 
 - Matt 系列技能负责产品分析、领域语言与 Spec；执行阶段不得重开产品定义。
-- Bootstrap 阶段使用 `$ask-harness`；技术设计缺失时使用 Superpowers `brainstorming` 并等待技术基线确认。
+- Bootstrap 阶段使用项目内置 `$ask-harness`；技术设计缺失时使用 Superpowers `brainstorming` 并等待技术基线确认。
 - 缺少必要 UI 基线时，UI Preparer 自动使用 `ui-ux-pro-max`，不要求中间确认。
 - Planner 使用 Superpowers `writing-plans`；通过独立审查后默认 `subagent-driven-development`。
 - 实施使用 `using-git-worktrees`、`test-driven-development`、`systematic-debugging`、`requesting-code-review`、`verification-before-completion`。

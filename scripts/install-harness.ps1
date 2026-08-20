@@ -18,11 +18,13 @@ if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "Target p
 
 $fileMap = [ordered]@{
     'AGENTS.md' = 'AGENTS.md'
+    'HARNESS.md' = 'HARNESS.md'
+    'HARNESS_VERSION' = 'HARNESS_VERSION'
+    'harness-source.yaml' = 'harness-source.yaml'
     'harness.config.yaml' = 'harness.config.yaml'
     'workflow.yaml' = 'workflow.yaml'
-    'README.md' = 'HARNESS.md'
 }
-$directories = @('roles','contracts','templates','checks','scripts','examples')
+$directories = @('.agents','roles','contracts','templates','checks','scripts','examples')
 $collisions = [System.Collections.Generic.List[object]]::new()
 $skipped = [System.Collections.Generic.List[string]]::new()
 $plannedFiles = [System.Collections.Generic.List[string]]::new()

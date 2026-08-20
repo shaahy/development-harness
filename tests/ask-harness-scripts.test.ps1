@@ -65,6 +65,7 @@ try {
         Assert-Result 'install_apply_pass' ($installed.exit_code -eq 0 -and $installed.json.status -eq 'INSTALLED') $installed.raw
         Assert-Result 'install_does_not_copy_git' (-not (Test-Path -LiteralPath (Join-Path $fresh '.git'))) 'Installer must not copy or initialize .git.'
         Assert-Result 'install_places_harness_doc' (Test-Path -LiteralPath (Join-Path $fresh 'HARNESS.md') -PathType Leaf) 'HARNESS.md missing.'
+        Assert-Result 'install_places_project_skill' (Test-Path -LiteralPath (Join-Path $fresh '.agents\skills\ask-harness\SKILL.md') -PathType Leaf) 'Project-local ask-harness Skill missing.'
         $installedValidation = Invoke-ScriptJson (Join-Path $fresh 'checks\validate-harness.ps1') @()
         Assert-Result 'installed_harness_validates' ($installedValidation.exit_code -eq 0 -and $installedValidation.json.valid -eq $true) $installedValidation.raw
         $idempotentPreview = Invoke-ScriptJson $installScript @('-TargetRoot',$fresh)
@@ -93,7 +94,7 @@ try {
             '-SpecPath','.scratch/feature/spec.md',
             '-AdrPaths','docs/architecture/ADR-001.md',
             '-WorktreePath',(Join-Path $testRoot 'worktrees\feature'),
-            '-Branch','codex/feature',
+            '-Branch','harness/feature',
             '-OutputPath',$inputPath,
             '-SpecApprovedByHuman',
             '-TechnicalDesignApprovedByHuman'
@@ -111,6 +112,14 @@ try {
         $ready = Invoke-ScriptJson $bootstrapScript @('-TargetRoot',$fresh,'-ExecutionInputPath',$inputPath)
         Assert-Result 'bootstrap_ready_for_orchestrator' ($ready.exit_code -eq 0 -and $ready.json.status -eq 'READY_FOR_AUTONOMOUS_EXECUTION') $ready.raw
 
+        & git -c core.excludesFile= -C $fresh remote add origin 'https://github.com/shaahy/development-harness.git'
+        $templateRemote = Invoke-ScriptJson $bootstrapScript @('-TargetRoot',$fresh,'-ExecutionInputPath',$inputPath)
+        Assert-Result 'bootstrap_blocks_template_origin' ($templateRemote.exit_code -ne 0 -and $templateRemote.json.status -eq 'BLOCKED_GIT') $templateRemote.raw
+        & git -c core.excludesFile= -C $fresh remote set-url origin 'git@github.com:shaahy/development-harness.git'
+        $templateSshRemote = Invoke-ScriptJson $bootstrapScript @('-TargetRoot',$fresh,'-ExecutionInputPath',$inputPath)
+        Assert-Result 'bootstrap_blocks_template_ssh_origin' ($templateSshRemote.exit_code -ne 0 -and $templateSshRemote.json.status -eq 'BLOCKED_GIT') $templateSshRemote.raw
+        & git -c core.excludesFile= -C $fresh remote remove origin
+
         $providedPath = Join-Path $fresh '.harness\provided-input.json'
         $providedArgs = @(
             '-TargetRoot',$fresh,'-FeatureId','feature-ui','-DomainContextPath','CONTEXT.md','-SpecPath','.scratch/feature/spec.md',
@@ -118,7 +127,7 @@ try {
             '-HandoffPath','docs/ui-ux/feature/handoff.md','-UiContractPath','docs/ui-ux/feature/UI-CONTRACT.md',
             '-DesignTokensPath','docs/ui-ux/feature/tokens.json','-DesignTokensCssPath','docs/ui-ux/feature/tokens.css',
             '-ComponentSpecsPath','docs/ui-ux/feature/components.md','-StateMatrixPath','docs/ui-ux/feature/states.md',
-            '-WorktreePath',(Join-Path $testRoot 'worktrees\feature-ui'),'-Branch','codex/feature-ui','-OutputPath',$providedPath,
+            '-WorktreePath',(Join-Path $testRoot 'worktrees\feature-ui'),'-Branch','harness/feature-ui','-OutputPath',$providedPath,
             '-SpecApprovedByHuman','-TechnicalDesignApprovedByHuman'
         )
         $provided = Invoke-ScriptJson $inputScript $providedArgs
